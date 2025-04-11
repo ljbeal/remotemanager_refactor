@@ -293,13 +293,6 @@ class Function(UUIDMixin):
         return output
 
     @property
-    def uuid(self) -> str:
-        """
-        Function uuid (64 characters)
-        """
-        return self._uuid
-
-    @property
     def object(self):
         """
         Recreates the function object by writing out the source, and importing.

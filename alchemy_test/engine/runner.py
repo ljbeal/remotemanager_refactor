@@ -30,14 +30,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
         return self._parent
     
     @property
-    def uuid(self) -> str:
-        return self._uuid
-    
-    @property
-    def short_uuid(self) -> str:
-        return self.uuid[:8]
-    
-    @property
     def call_args(self) -> Dict[Any, Any]:
         return self._call_args
     
