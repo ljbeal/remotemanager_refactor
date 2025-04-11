@@ -4,9 +4,8 @@ import os
 import re
 from typing import Any, Callable, Dict, List, Union
 
-from alchemy_test.utils.generate_uuid import generate_uuid
 from alchemy_test.utils.tokenizer import Tokenizer
-
+from alchemy_test.utils.uuidmixin import UUIDMixin
 
 
 _SCRIPT_TEMPLATE = """
@@ -29,7 +28,7 @@ def line_is_end_of_function(line: str) -> bool:
     return re.search(SIG_END_REGEX, line) is not None
 
 
-class Function:
+class Function(UUIDMixin):
     """
     Serialise function to an executable python file for transfer
 
@@ -42,7 +41,6 @@ class Function:
 
     def __init__(self, func: Union[Callable[..., Any], str], force_self: bool = False):
 
-        self._uuid: str = ""
         # collect the source, name and signature
         if isinstance(func, str):
             source = func
@@ -103,7 +101,7 @@ class Function:
 
         self._source = source
 
-        self._uuid = generate_uuid(self._source)
+        self._uuid = self.generate_uuid(self._source)
 
     def __call__(self, *args: Any, **kwargs: Any):
         return self.object(*args, **kwargs)
