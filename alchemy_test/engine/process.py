@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Union
 
 from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner import Runner
@@ -20,10 +20,14 @@ class ProcessHandler:
     A Process can be created by the process decorator, which will handle the wrapping for you.
     """
 
-    __slots__ = ["_function", "_runners"]
+    __slots__ = ["_function", "_runners", "_name"]
 
-    def __init__(self, function: Callable[..., Any], **run_args: Any) -> None:
+    def __init__(self, function: Callable[..., Any], name: Union[str, None] = None, **run_args: Any) -> None:
         self._function = Function(function)
+
+        if name is None:
+            name = f"Process-{self.function.name}"
+        self._name = name
 
         self._runners: Dict[str, Runner] = {}
     
@@ -48,6 +52,13 @@ class ProcessHandler:
         Returns the stored Function object
         """
         return self._function
+    
+    @property
+    def name(self) -> str:
+        """
+        Returns the name of this process
+        """
+        return self._name
     
     @property
     def runners(self) -> List[Runner]:
