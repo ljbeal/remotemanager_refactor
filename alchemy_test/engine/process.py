@@ -44,6 +44,15 @@ class Process:
         Returns the stored Function object
         """
         return self._function
+    
+    def run(self, *args: Any, **kwargs: Any) -> bool:
+        """
+        Either runs a single runner with the given args, or runs all prepared runners
+
+        Returns:
+            bool: True if the process was executed, False otherwise (in a skip or no-runner situation)
+        """
+        return False
 
 
 def process(**run_args: Any) -> Callable[..., Any]:
