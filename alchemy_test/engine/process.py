@@ -1,6 +1,7 @@
 from typing import Any, Callable, Dict, List, Union
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
+from alchemy_test.engine.filehandler import FileHandler
 from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
 
@@ -21,7 +22,7 @@ class ProcessHandler(ExecArgsMixin):
     A Process can be created by the process decorator, which will handle the wrapping for you.
     """
 
-    __slots__ = ["_function", "_runners", "_name"]
+    __slots__ = ["_function", "_runners", "_name", "_files"]
 
     def __init__(self, function: Callable[..., Any], name: Union[str, None] = None, **exec_args: Any) -> None:
         self._function = Function(function)
@@ -33,6 +34,12 @@ class ProcessHandler(ExecArgsMixin):
         self._name = name
 
         self._runners: Dict[str, Runner] = {}
+
+        self._files = FileHandler(
+            local_dir=self.local_dir,
+            remote_dir=self.remote_dir,
+            filenames=["master.sh", "repo.py"],
+        )
     
 
     def __repr__(self) -> str:
@@ -62,6 +69,13 @@ class ProcessHandler(ExecArgsMixin):
         Returns the name of this process
         """
         return self._name
+    
+    @property
+    def files(self) -> FileHandler:
+        """
+        Returns the FileHandler object associated with this process
+        """
+        return self._files
     
     @property
     def runners(self) -> List[Runner]:

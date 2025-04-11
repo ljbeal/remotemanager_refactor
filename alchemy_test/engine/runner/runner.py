@@ -2,6 +2,7 @@ import os
 from typing import TYPE_CHECKING, Any, Dict
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
+from alchemy_test.engine.filehandler import FileHandler
 from alchemy_test.utils.uuidmixin import UUIDMixin
 
 # TYPE_CHECKING is false at runtime, so does not cause a circular dependency
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
 
 class Runner(UUIDMixin, ExecArgsMixin):
 
-    __slots__ = ["_idx", "_parent", "_call_args", "_uuid"]
+    __slots__ = ["_idx", "_parent", "_call_args", "_uuid", "_files"]
 
     def __init__(
             self,
@@ -27,6 +28,12 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         self._uuid = self.generate_uuid(self.call_args)
 
+        self._files = FileHandler(
+            local_dir=self.local_dir, 
+            remote_dir=self.remote_dir, 
+            filenames=["runfile.py", "jobscript.sh"]
+            )
+
     def __repr__(self) -> str:
         return self.name
 
@@ -41,6 +48,10 @@ class Runner(UUIDMixin, ExecArgsMixin):
     @property
     def name(self) -> str:
         return f"{self.parent.name}-runner-{self.idx}"
+    
+    @property
+    def files(self) -> FileHandler:
+        return self._files
     
     @property
     def call_args(self) -> Dict[Any, Any]:
