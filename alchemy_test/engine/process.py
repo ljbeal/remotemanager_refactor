@@ -4,7 +4,7 @@ from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner import Runner
 
 
-class Process:
+class ProcessHandler:
     """
     Process is the main class used to tie Runners together
 
@@ -78,20 +78,20 @@ class Process:
         return False
 
 
-def process(**run_args: Any) -> Callable[..., Any]:
+def Process(**run_args: Any) -> Callable[..., Any]:
     """
     Decorator stub to generate a Process class from a function
 
     Wraps the function, returning a Process which contains it
     """
-    def decorate(function: Callable[..., Any]) -> Process:
-        return Process(function, **run_args)
+    def decorate(function: Callable[..., Any]) -> ProcessHandler:
+        return ProcessHandler(function, **run_args)
     return decorate
 
 
 if __name__ == "__main__":
 
-    @process(url="foo")
+    @Process(url="foo")
     def test(x: int) -> int:
         return x
     

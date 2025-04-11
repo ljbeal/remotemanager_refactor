@@ -4,7 +4,7 @@ from alchemy_test.utils.uuidmixin import UUIDMixin
 
 # TYPE_CHECKING is false at runtime, so does not cause a circular dependency
 if TYPE_CHECKING:
-    from alchemy_test.engine.process import Process
+    from alchemy_test.engine.process import ProcessHandler
 
 
 class Runner(UUIDMixin):
@@ -13,7 +13,7 @@ class Runner(UUIDMixin):
 
     def __init__(
             self,
-            parent: Process,
+            parent: "ProcessHandler",
             call_arguments: Dict[Any, Any], 
             exec_arguments: Dict[Any, Any]
         ):
@@ -24,7 +24,7 @@ class Runner(UUIDMixin):
         self._uuid = self.generate_uuid(self.call_args)
 
     @property
-    def parent(self) -> Process:
+    def parent(self) -> "ProcessHandler":
         return self._parent
     
     @property
