@@ -4,6 +4,20 @@ from alchemy_test.storage.function import Function
 
 
 class Process:
+    """
+    Process is the main class used to tie Runners together
+
+    It performs two main tasks:
+     - User interace
+     - Runner communication
+    
+    The first task is handled by being the main API endpoint that the user interacts with.
+
+    In the background, there is little logic actually happening on the Process itself, as most is 
+    deferred to the Runner.
+
+    A Process can be created by the process decorator, which will handle the wrapping for you.
+    """
 
     __slots__ = ["_function"]
 
@@ -15,6 +29,9 @@ class Process:
         return f"Process({self._function})"
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        Performs a single run with the given args
+        """
         # "direct" call for now, until we implement remote methods
         # call the function with the provided arguments
         result = self.function(*args, **kwargs)
@@ -23,7 +40,9 @@ class Process:
     
     @property
     def function(self) -> Function:
-        # return the function object associated with this Process instance
+        """
+        Returns the stored Function object
+        """
         return self._function
 
 
