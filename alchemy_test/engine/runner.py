@@ -51,7 +51,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
         # ensure the local staging dir exists
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
-        
 
     def transfer(self):
         """
