@@ -1,15 +1,30 @@
 from typing import Any, Callable
 
+from alchemy_test.storage.function import Function
+
 
 class Process:
 
     __slots__ = ["_function"]
 
     def __init__(self, function: Callable[..., Any], **run_args: Any) -> None:
-        print(f"Creating Process wrapper for function {function}")
-        print(f"Run args: {run_args}")
+        self._function = Function(function)
 
-        self._function = function
+    def __repr__(self) -> str:
+        # return a string representation of this Process instance
+        return f"Process({self._function})"
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        # "direct" call for now, until we implement remote methods
+        # call the function with the provided arguments
+        result = self.function(*args, **kwargs)
+        # return the result of the function
+        return result
+    
+    @property
+    def function(self) -> Function:
+        # return the function object associated with this Process instance
+        return self._function
 
 
 def process(**run_args: Any) -> Callable[..., Any]:
