@@ -27,6 +27,9 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         self._uuid = self.generate_uuid(self.call_args)
 
+    def __repr__(self) -> str:
+        return self.name
+
     @property
     def idx(self) -> int:
         return self._idx
@@ -59,6 +62,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         This Phase creates all necessary files and stages them within the local staging directory
         """
         # ensure the local staging dir exists
+        print(f"Staging {self}")
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
 
@@ -68,6 +72,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         Transfers the content of the local staging dir to the remote directories as needed
         """
+        print(f"Transferring {self}")
         pass
 
     def run(self):
@@ -76,4 +81,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         ssh into the remote and execute the calculations as specified
         """
-        pass
+        print(f"Running using {self} as the master")
+        self.stage()
+        self.transfer()

@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, List, Union
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.storage.function import Function
-from alchemy_test.engine.runner import Runner
+from alchemy_test.engine.runner.runner import Runner
 
 
 class ProcessHandler(ExecArgsMixin):
@@ -70,11 +70,11 @@ class ProcessHandler(ExecArgsMixin):
         """
         return list(self._runners.values())
     
-    def add_runner(self, call_args: Dict[Any, Any], run_args: Dict[Any, Any]) -> bool:
+    def add_runner(self, call_args: Dict[Any, Any], exec_args: Dict[Any, Any]) -> bool:
         """
         Adds a new runner to the process with the given arguments
         """
-        runner = Runner(idx=len(self.runners), parent=self, call_arguments=call_args, exec_arguments=run_args)
+        runner = Runner(idx=len(self.runners), parent=self, call_arguments=call_args, exec_arguments=exec_args)
 
         if runner.uuid not in self._runners:
             self._runners[runner.uuid] = runner
@@ -82,14 +82,23 @@ class ProcessHandler(ExecArgsMixin):
             return True
         return False
     
-    def run(self, *args: Any, **kwargs: Any) -> bool:
+    def prepare(self, exec_args: Union[Dict[Any, Any], None] = None, **call_args):
+        """
+        Prepares the process with the given exec arguments and call arguments
+        """
+        if exec_args is None:
+            exec_args = {}
+
+        self.add_runner(call_args=call_args, exec_args=exec_args)
+    
+    def run(self) -> None:
         """
         Either runs a single runner with the given args, or runs all prepared runners
 
         Returns:
             bool: True if the process was executed, False otherwise (in a skip or no-runner situation)
         """
-        return False
+        self.runners[0].run()
 
 
 def Process(**run_args: Any) -> Callable[..., Any]:
