@@ -87,12 +87,3 @@ def Process(**run_args: Any) -> Callable[..., Any]:
     def decorate(function: Callable[..., Any]) -> ProcessHandler:
         return ProcessHandler(function, **run_args)
     return decorate
-
-
-if __name__ == "__main__":
-
-    @Process(url="foo")
-    def test(x: int) -> int:
-        return x
-    
-    print(test)
