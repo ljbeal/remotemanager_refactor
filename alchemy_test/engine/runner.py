@@ -36,6 +36,10 @@ class Runner(UUIDMixin, ExecArgsMixin):
         return self._parent
     
     @property
+    def name(self) -> str:
+        return f"{self.parent.name}-runner-{self.idx}"
+    
+    @property
     def call_args(self) -> Dict[Any, Any]:
         return self._call_args
     
