@@ -74,7 +74,7 @@ class ProcessHandler(ExecArgsMixin):
         """
         Adds a new runner to the process with the given arguments
         """
-        runner = Runner(parent=self, call_arguments=call_args, exec_arguments=run_args)
+        runner = Runner(idx=len(self.runners), parent=self, call_arguments=call_args, exec_arguments=run_args)
 
         if runner.uuid not in self._runners:
             self._runners[runner.uuid] = runner

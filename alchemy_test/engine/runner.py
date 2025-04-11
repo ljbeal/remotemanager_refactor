@@ -11,19 +11,25 @@ if TYPE_CHECKING:
 
 class Runner(UUIDMixin, ExecArgsMixin):
 
-    __slots__ = ["_parent", "_call_args", "_uuid"]
+    __slots__ = ["_idx", "_parent", "_call_args", "_uuid"]
 
     def __init__(
             self,
+            idx: int,
             parent: "ProcessHandler",
             call_arguments: Dict[Any, Any], 
             exec_arguments: Dict[Any, Any]
         ):
+        self._idx = idx
         self._parent = parent
         self._call_args = call_arguments
         self._exec_args = exec_arguments
 
         self._uuid = self.generate_uuid(self.call_args)
+
+    @property
+    def idx(self) -> int:
+        return self._idx
 
     @property
     def parent(self) -> "ProcessHandler":
