@@ -28,11 +28,9 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         self._uuid = self.generate_uuid(self.call_args)
 
-        self._files = FileHandler(
-            local_dir=self.local_dir, 
-            remote_dir=self.remote_dir, 
-            filenames=["runfile.py", "jobscript.sh"]
-            )
+        self._files = FileHandler()
+        self._files.add_file(self.local_dir, self.remote_dir, "jobscript", f"{self.name}-jobscript.sh")
+        self._files.add_file(self.local_dir, self.remote_dir, "runfile", f"{self.name}-runfile.py")
 
     def __repr__(self) -> str:
         return self.name
@@ -76,6 +74,12 @@ class Runner(UUIDMixin, ExecArgsMixin):
         print(f"Staging {self}")
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
+        
+        self.parent.files.master.write("master file")
+        self.parent.files.repo.write("repo file")
+
+        self.files.runfile.write("run file")
+        self.files.jobscript.write("jobscript file")
 
     def transfer(self):
         """

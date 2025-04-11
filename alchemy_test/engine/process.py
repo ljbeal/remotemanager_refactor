@@ -35,12 +35,9 @@ class ProcessHandler(ExecArgsMixin):
 
         self._runners: Dict[str, Runner] = {}
 
-        self._files = FileHandler(
-            local_dir=self.local_dir,
-            remote_dir=self.remote_dir,
-            filenames=["master.sh", "repo.py"],
-        )
-    
+        self._files = FileHandler()
+        self._files.add_file(self.local_dir, self.remote_dir, "master", f"{self.name}-master.sh")
+        self._files.add_file(self.local_dir, self.remote_dir, "repo", f"{self.name}-repo.py")
 
     def __repr__(self) -> str:
         # return a string representation of this Process instance

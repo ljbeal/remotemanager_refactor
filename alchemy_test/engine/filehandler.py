@@ -7,12 +7,12 @@ class FileHandler:
 
     __slots__ = ["_files"]
     
-    def __init__(self, local_dir: str, remote_dir: str, filenames: List[str]):
+    def __init__(self):
         
         self._files = {}
-        for name in filenames:
-            tmp = TrackedFile(local_path=local_dir, remote_path=remote_dir, file=name)
-            self._files[tmp.importstr] = tmp
+
+    def add_file(self, local_dir, remote_dir, endpoint, filename):
+        self._files[endpoint] = TrackedFile(local_dir, remote_dir, filename)
 
     def __getattribute__(self, name):
         if name != "_files" and name in self._files:
