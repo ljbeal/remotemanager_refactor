@@ -39,3 +39,17 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
 version = {attr = 'alchemy_test.__version__'}
+
+[tool.pylance]
+exclude = [
+    "**/tests/**",
+    "**/test_*.py",
+    "**/_build/**"
+]
+
+[tool.pyright]
+exclude = [
+    "**/tests/**",
+    "**/test_*.py",
+    "**/_build/**"
+]
