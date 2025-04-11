@@ -1,10 +1,11 @@
 from typing import Any, Callable, Dict, List, Union
 
+from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner import Runner
 
 
-class ProcessHandler:
+class ProcessHandler(ExecArgsMixin):
     """
     Process is the main class used to tie Runners together
 
@@ -22,8 +23,10 @@ class ProcessHandler:
 
     __slots__ = ["_function", "_runners", "_name"]
 
-    def __init__(self, function: Callable[..., Any], name: Union[str, None] = None, **run_args: Any) -> None:
+    def __init__(self, function: Callable[..., Any], name: Union[str, None] = None, **exec_args: Any) -> None:
         self._function = Function(function)
+
+        self._exec_args = exec_args
 
         if name is None:
             name = f"Process-{self.function.name}"
