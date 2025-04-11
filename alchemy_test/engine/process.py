@@ -1,6 +1,7 @@
-from typing import Any, Callable
+from typing import Any, Callable, Dict, List
 
 from alchemy_test.storage.function import Function
+from alchemy_test.engine.runner import Runner
 
 
 class Process:
@@ -19,10 +20,13 @@ class Process:
     A Process can be created by the process decorator, which will handle the wrapping for you.
     """
 
-    __slots__ = ["_function"]
+    __slots__ = ["_function", "_runners"]
 
     def __init__(self, function: Callable[..., Any], **run_args: Any) -> None:
         self._function = Function(function)
+
+        self._runners: Dict[str, Runner] = {}
+    
 
     def __repr__(self) -> str:
         # return a string representation of this Process instance
@@ -44,6 +48,25 @@ class Process:
         Returns the stored Function object
         """
         return self._function
+    
+    @property
+    def runners(self) -> List[Runner]:
+        """
+        Returns the list of runners associated with this process
+        """
+        return list(self._runners.values())
+    
+    def add_runner(self, call_args: Dict[Any, Any], run_args: Dict[Any, Any]) -> bool:
+        """
+        Adds a new runner to the process with the given arguments
+        """
+        runner = Runner(parent=self, call_arguments=call_args, exec_arguments=run_args)
+
+        if runner.uuid not in self._runners:
+            self._runners[runner.uuid] = runner
+
+            return True
+        return False
     
     def run(self, *args: Any, **kwargs: Any) -> bool:
         """
