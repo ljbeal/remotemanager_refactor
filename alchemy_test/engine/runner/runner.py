@@ -163,7 +163,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         for runner in self.parent.runners:
             for file in runner.files.files_to_send:
-                self.url.transport.queue_for_push(file)
+                runner.url.transport.queue_for_push(file)
         
         for file in self.parent.files.files_to_send:
             self.url.transport.queue_for_push(file)
