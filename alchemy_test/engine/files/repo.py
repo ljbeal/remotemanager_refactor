@@ -58,16 +58,20 @@ class Manifest:
         with open(self.path, "a+") as o:
             o.write(string)
 
-    def get(self, uuid: str) -> list:
-        """Gets all lines that correspond to uuid"""
+    def get(self, uuid: str, string: Union[str, None] = None) -> list:
+        """
+        Gets all lines that correspond to uuid
+        
+        Optionally, pass a log as a string to `string` to override the source
+        """
         # we need to "recreate" the log from the parsed output,
         # since parse_log handles multiline entries
         log = []
-        for entry in self.parse_log()["log"].get(uuid, []):
+        for entry in self.parse_log(string=string)["log"].get(uuid, []):
             # the timestamp here is always from a UTC string
             dt = datetime.fromtimestamp(entry[0]).astimezone(timezone.utc)
             timestring = dt.strftime("%Y-%m-%d %H:%M:%S UTC")
-            log.append(f"{timestring} [uuid_a] {entry[1]}")
+            log.append(f"{timestring} [{uuid}] {entry[1]}")
 
         return log
 
