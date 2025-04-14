@@ -67,6 +67,13 @@ class Runner(UUIDMixin, ExecArgsMixin):
         global_args = self.parent.exec_args.copy()
         global_args.update(self._exec_args)
         return global_args
+    
+    @property
+    def runline(self) -> str:
+        """
+        Returns the string necessary to execute this runner
+        """
+        return f"{self.url.submitter} {self.files.jobscript.name}"
 
     def stage(self):
         """
@@ -79,7 +86,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
         
-        self.parent.files.master.write("master file")
+        self.parent.files.master.write(self.runline)
         self.parent.files.repo.write("repo file")
 
         self.files.runfile.write("run file")
