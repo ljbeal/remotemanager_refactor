@@ -88,12 +88,17 @@ class Runner(UUIDMixin, ExecArgsMixin):
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
         
+        # generate and add the per-runner lines
         self.parent.files.master.write(self.runline)
         self.files.jobscript.write(f"{self.url.python} {self.files.runfile.name}")
 
+        # write out the repository
         with open(repo.__file__, "r") as o:
             self.parent.files.repo.write(o.read())
+        self.parent.files.repo.append("\n### Main Function ###\n")
+        self.parent.files.repo.append(self.parent.function.raw_source)
 
+        # write the actual run file
         self.files.runfile.write("run file")
 
     def transfer(self):
