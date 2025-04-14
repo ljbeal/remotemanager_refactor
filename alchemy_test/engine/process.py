@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, List, Union
 
+from alchemy_test.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandler
 from alchemy_test.storage.function import Function
@@ -22,9 +23,15 @@ class ProcessHandler(ExecArgsMixin):
     A Process can be created by the process decorator, which will handle the wrapping for you.
     """
 
-    __slots__ = ["_function", "_runners", "_name", "_files"]
+    __slots__ = ["_function", "_runners", "_name", "_files", "_url"]
 
-    def __init__(self, function: Callable[..., Any], name: Union[str, None] = None, **exec_args: Any) -> None:
+    def __init__(
+            self,
+            function: Callable[..., Any],
+            name: Union[str, None] = None,
+            url: Union[URL, None] = None,
+            **exec_args: Any
+        ) -> None:
         self._function = Function(function)
 
         self._exec_args = exec_args
@@ -38,6 +45,8 @@ class ProcessHandler(ExecArgsMixin):
         self._files = FileHandler()
         self._files.add_file(self.local_dir, self.remote_dir, "master", f"{self.name}-master.sh")
         self._files.add_file(self.local_dir, self.remote_dir, "repo", f"{self.name}-repo.py")
+
+        self._url = url
 
     def __repr__(self) -> str:
         # return a string representation of this Process instance
@@ -66,6 +75,12 @@ class ProcessHandler(ExecArgsMixin):
         Returns the name of this process
         """
         return self._name
+    
+    @property
+    def url(self) -> URL:
+        if self._url is None:
+            self._url = URL()
+        return self._url
     
     @property
     def files(self) -> FileHandler:

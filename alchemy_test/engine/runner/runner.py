@@ -44,6 +44,10 @@ class Runner(UUIDMixin, ExecArgsMixin):
         return self._parent
     
     @property
+    def url(self):
+        return self.parent.url
+    
+    @property
     def name(self) -> str:
         return f"{self.parent.name}-runner-{self.idx}"
     
