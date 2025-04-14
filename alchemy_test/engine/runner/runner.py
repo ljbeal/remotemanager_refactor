@@ -34,7 +34,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self._files.add_file(self.local_dir, self.remote_dir, "jobscript", f"{self.name}-jobscript.sh")
         self._files.add_file(self.local_dir, self.remote_dir, "runfile", f"{self.name}-runfile.py")
 
-        self._files.add_file(self.local_dir, self.remote_dir, "resultfile", f"{self.name}-result.json")
+        self._files.add_file(self.local_dir, self.remote_dir, "resultfile", f"{self.name}-result.json", send=False)
 
     def __repr__(self) -> str:
         return self.name
@@ -142,7 +142,14 @@ class Runner(UUIDMixin, ExecArgsMixin):
         Transfers the content of the local staging dir to the remote directories as needed
         """
         print(f"Transferring {self}")
-        pass
+        
+        for file in self.files.files_to_send:
+            self.url.transport.queue_for_push(file)
+        
+        for file in self.parent.files.files_to_send:
+            self.url.transport.queue_for_push(file)
+
+        self.url.transport.transfer()
 
     def run(self):
         """
