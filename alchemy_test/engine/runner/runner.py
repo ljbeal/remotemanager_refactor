@@ -83,7 +83,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         """
         return f"{self.url.submitter} {self.files.jobscript.name}"
 
-    def stage(self):
+    def stage(self) -> bool:
         """
         Perform staging
 
@@ -93,11 +93,54 @@ class Runner(UUIDMixin, ExecArgsMixin):
         print(f"Staging {self}")
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
+
+        nstaged = 0
+        for runner in self.parent.runners:
+            self.parent.files.master.append(self.runline)
+
+            runner.files.jobscript.write(f"{runner.url.python} {runner.files.runfile.name}")
+
+            # write the actual run file
+
+            # script proper
+            runscript = [
+                "import importlib.util, os, sys, time",
+                "remote_path = os.path.expandvars('$sourcedir')",
+                f"path = os.path.join(remote_path, '{runner.parent.files.repo.name}')",
+                "spec = importlib.util.spec_from_file_location('repo', path)",
+                "repo = importlib.util.module_from_spec(spec)",
+                "spec.loader.exec_module(repo)\n",
+                f"manifest = repo.Manifest(instance_uuid='{runner.short_uuid}', filename='{runner.parent.files.manifest.name}')",
+                "manifest.runner_mode = True",
+                # need to add this instance of the manifest for the function
+                "repo.manifest = manifest",
+                "starttime = int(time.time())",
+                "manifest.write('started')",
+                "vmaj, vmin, vpat, *extra = sys.version_info",
+                "if vmaj < 3:",
+                "\tmanifest.write('failed - Python Version')",
+                '\traise RuntimeError(f"Python version {vmaj}.{vmin}.{vpat} < 3.x.x")',
+                f"call_args = {runner.call_args}",  # direct python dict serialisation only right now
+                f"try:\n\tresult = repo.{runner.parent.function.name}(**call_args)",
+                "except Exception:\n\tmanifest.write('failed')",
+                "\traise",
+                "else:",
+                f"\tlast_reported_starttime = manifest.last_time('started').get('"  # comma
+                f"{runner.short_uuid}', -1)",
+                "\tif last_reported_starttime <= starttime: # no output for outdated run",
+                "\t\tmanifest.write('completed')",
+                f"\t\tmanifest.dump_json"  # no comma
+                f"(result, '{runner.files.resultfile.name}')",
+            ]
+            runner.files.runfile.write("\n".join(runscript))
+            nstaged += 1
+
+        if nstaged == 0:
+            print("Staged 0 runners")
+            return False
         
         # generate and add the per-runner lines
         self.parent.files.master.write(f"export sourcedir=$PWD\nrm -rf {self.parent.files.manifest.name}")
-        self.parent.files.master.append(self.runline)
-        self.files.jobscript.write(f"{self.url.python} {self.files.runfile.name}")
 
         # write out the repository
         with open(repo.__file__, "r") as o:
@@ -105,39 +148,9 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self.parent.files.repo.append("\n### Main Function ###\n")
         self.parent.files.repo.append(self.parent.function.raw_source)
 
-        # write the actual run file
+        print(f"Staged {nstaged}/{len(self.parent.runners)} Runners")
 
-        # script proper
-        runscript = [
-            "import importlib.util, os, sys, time",
-            "remote_path = os.path.expandvars('$sourcedir')",
-            f"path = os.path.join(remote_path, '{self.parent.files.repo.name}')",
-            "spec = importlib.util.spec_from_file_location('repo', path)",
-            "repo = importlib.util.module_from_spec(spec)",
-            "spec.loader.exec_module(repo)\n",
-            f"manifest = repo.Manifest(instance_uuid='{self.short_uuid}', filename='{self.parent.files.manifest.name}')",
-            "manifest.runner_mode = True",
-            # need to add this instance of the manifest for the function
-            "repo.manifest = manifest",
-            "starttime = int(time.time())",
-            "manifest.write('started')",
-            "vmaj, vmin, vpat, *extra = sys.version_info",
-            "if vmaj < 3:",
-            "\tmanifest.write('failed - Python Version')",
-            '\traise RuntimeError(f"Python version {vmaj}.{vmin}.{vpat} < 3.x.x")',
-            f"call_args = {self.call_args}",  # direct python dict serialisation only right now
-            f"try:\n\tresult = repo.{self.parent.function.name}(**call_args)",
-            "except Exception:\n\tmanifest.write('failed')",
-            "\traise",
-            "else:",
-            f"\tlast_reported_starttime = manifest.last_time('started').get('"  # comma
-            f"{self.short_uuid}', -1)",
-            "\tif last_reported_starttime <= starttime: # no output for outdated run",
-            "\t\tmanifest.write('completed')",
-            f"\t\tmanifest.dump_json"  # no comma
-            f"(result, '{self.files.resultfile.name}')",
-        ]
-        self.files.runfile.write("\n".join(runscript))
+        return True
 
     def transfer(self):
         """
