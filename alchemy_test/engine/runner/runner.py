@@ -5,6 +5,8 @@ from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandler
 from alchemy_test.utils.uuidmixin import UUIDMixin
 
+import alchemy_test.engine.files.repo as repo
+
 # TYPE_CHECKING is false at runtime, so does not cause a circular dependency
 if TYPE_CHECKING:
     from alchemy_test.engine.process import ProcessHandler
@@ -89,7 +91,9 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self.parent.files.master.write(self.runline)
         self.files.jobscript.write(f"{self.url.python} {self.files.runfile.name}")
 
-        self.parent.files.repo.write("repo file")
+        with open(repo.__file__, "r") as o:
+            self.parent.files.repo.write(o.read())
+
         self.files.runfile.write("run file")
 
     def transfer(self):
