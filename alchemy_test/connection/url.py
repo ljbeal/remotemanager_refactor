@@ -78,7 +78,7 @@ class URL(UUIDMixin):
         verbose: Union[None, int, bool, Verbosity] = None,
         timeout: int = 5,
         max_timeouts: int = 3,
-        python: str = "python",
+        python: str = "python3",
         submitter: str = _submitter_default,
         shell: str = "bash",
         raise_errors: bool = True,
