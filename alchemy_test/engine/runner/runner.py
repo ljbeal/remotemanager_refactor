@@ -2,7 +2,7 @@ import os
 from typing import TYPE_CHECKING, Any, Dict
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
-from alchemy_test.engine.filehandler import FileHandler
+from alchemy_test.engine.files.filehandler import FileHandler
 from alchemy_test.utils.uuidmixin import UUIDMixin
 
 # TYPE_CHECKING is false at runtime, so does not cause a circular dependency
