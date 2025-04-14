@@ -93,10 +93,13 @@ class Runner(UUIDMixin, ExecArgsMixin):
         print(f"Staging {self}")
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
+        
+        # generate and add the per-runner lines
+        self.parent.files.master.write(f"export sourcedir=$PWD\nrm -rf {self.parent.files.manifest.name}")
 
         nstaged = 0
         for runner in self.parent.runners:
-            self.parent.files.master.append(self.runline)
+            self.parent.files.master.append(runner.runline)
 
             runner.files.jobscript.write(f"{runner.url.python} {runner.files.runfile.name}")
 
@@ -138,9 +141,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
         if nstaged == 0:
             print("Staged 0 runners")
             return False
-        
-        # generate and add the per-runner lines
-        self.parent.files.master.write(f"export sourcedir=$PWD\nrm -rf {self.parent.files.manifest.name}")
 
         # write out the repository
         with open(repo.__file__, "r") as o:
