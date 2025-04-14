@@ -160,9 +160,10 @@ class Runner(UUIDMixin, ExecArgsMixin):
         """
         print(f"Transferring {self}")
         self.stage()
-        
-        for file in self.files.files_to_send:
-            self.url.transport.queue_for_push(file)
+
+        for runner in self.parent.runners:
+            for file in runner.files.files_to_send:
+                self.url.transport.queue_for_push(file)
         
         for file in self.parent.files.files_to_send:
             self.url.transport.queue_for_push(file)
