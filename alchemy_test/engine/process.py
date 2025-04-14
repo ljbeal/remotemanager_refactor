@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, List, Union
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
-from alchemy_test.engine.filehandler import FileHandler
+from alchemy_test.engine.files.filehandler import FileHandler
 from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
 
