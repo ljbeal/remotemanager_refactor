@@ -1,3 +1,4 @@
+import json
 import os
 from typing import TYPE_CHECKING, Any, Dict
 
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 
 class Runner(UUIDMixin, ExecArgsMixin):
 
-    __slots__ = ["_idx", "_parent", "_call_args", "_uuid", "_files", "_remote_status"]
+    __slots__ = ["_idx", "_parent", "_call_args", "_uuid", "_files", "_remote_status", "_result"]
 
     def __init__(
             self,
@@ -37,6 +38,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self._files.add_file(self.local_dir, self.remote_dir, "resultfile", f"{self.name}-result.json", send=False)
 
         self._remote_status = []
+        self._result = None
 
     def __repr__(self) -> str:
         return self.name
@@ -171,3 +173,12 @@ class Runner(UUIDMixin, ExecArgsMixin):
             if line.endswith("completed"):
                 return True
         return False
+    
+    @property
+    def result(self) -> Any:
+        return self._result
+    
+    def read_local_files(self) -> None:
+        if self.files.resultfile.exists_local:
+            with open(self.files.resultfile.local, "r") as o:
+                self._result = json.load(o)
