@@ -173,7 +173,14 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         
         self.url.transport.transfer()
 
+        for runner in self.runners:
+            runner.read_local_files()
+
         return fetched
+    
+    @property
+    def results(self) -> List[Any]:
+        return [r.result for r in self.runners]
 
 
 def Process(**run_args: Any) -> Callable[..., Any]:
