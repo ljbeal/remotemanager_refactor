@@ -142,6 +142,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         Transfers the content of the local staging dir to the remote directories as needed
         """
         print(f"Transferring {self}")
+        self.stage()
         
         for file in self.files.files_to_send:
             self.url.transport.queue_for_push(file)
@@ -158,5 +159,4 @@ class Runner(UUIDMixin, ExecArgsMixin):
         ssh into the remote and execute the calculations as specified
         """
         print(f"Running using {self} as the master")
-        self.stage()
         self.transfer()
