@@ -91,7 +91,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
             os.makedirs(self.local_dir)
         
         # generate and add the per-runner lines
-        self.parent.files.master.write("export sourcedir=$PWD")
+        self.parent.files.master.write(f"export sourcedir=$PWD\nrm -rf {self.parent.files.manifest.name}")
         self.parent.files.master.append(self.runline)
         self.files.jobscript.write(f"{self.url.python} {self.files.runfile.name}")
 
