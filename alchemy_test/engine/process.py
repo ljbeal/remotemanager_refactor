@@ -128,6 +128,9 @@ class ProcessHandler(ExecArgsMixin):
         """
         self.runners[0].run()
 
+    def query_remote(self):
+        return self.runners[0].query_remote()
+
 
 def Process(**run_args: Any) -> Callable[..., Any]:
     """

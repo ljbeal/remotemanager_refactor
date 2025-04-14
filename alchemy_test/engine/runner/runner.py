@@ -162,3 +162,11 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self.transfer()
 
         self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
+
+    def query_remote(self):
+        content = self.url.cmd(f"cd {self.remote_dir} && cat {self.parent.files.manifest.name}").stdout
+
+        handler = repo.Manifest(instance_uuid=self.uuid)
+        data = handler.get(uuid=self.short_uuid, string = content)
+
+        return data
