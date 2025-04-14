@@ -178,7 +178,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         print(f"Running using {self} as the master")
         self.transfer()
 
-        self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
+        self.parent._run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
 
     @property
     def is_finished(self) -> bool:

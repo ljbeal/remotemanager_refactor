@@ -1,6 +1,7 @@
 import time
 from typing import Any, Callable, Dict, List, Union
 
+from alchemy_test.connection.cmd import CMD
 from alchemy_test.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandler
@@ -26,7 +27,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
     A Process can be created by the process decorator, which will handle the wrapping for you.
     """
 
-    __slots__ = ["_function", "_runners", "_name", "_files", "_url"]
+    __slots__ = ["_function", "_runners", "_name", "_files", "_url", "_run_cmd"]
 
     def __init__(
             self,
@@ -53,6 +54,8 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         self._files.add_file(self.local_dir, self.remote_dir, "manifest", f"{self.name}-manifest.txt", send=False)
 
         self._url = url
+
+        self._run_cmd: Union[CMD, None] = None
 
     def __repr__(self) -> str:
         # return a string representation of this Process instance
@@ -131,6 +134,10 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
             bool: True if the process was executed, False otherwise (in a skip or no-runner situation)
         """
         self.runners[0].run()
+
+    @property
+    def run_cmd(self) -> Union[CMD, None]:
+        return self._run_cmd
 
     def query_remote(self):
         content = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}").stdout
