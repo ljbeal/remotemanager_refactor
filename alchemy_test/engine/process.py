@@ -46,7 +46,7 @@ class ProcessHandler(ExecArgsMixin):
         self._files.add_file(self.local_dir, self.remote_dir, "master", f"{self.name}-master.sh")
         self._files.add_file(self.local_dir, self.remote_dir, "repo", f"{self.name}-repo.py")
 
-        self._files.add_file(self.local_dir, self.remote_dir, "manifest", f"{self.name}-manifest.txt")
+        self._files.add_file(self.local_dir, self.remote_dir, "manifest", f"{self.name}-manifest.txt", send=False)
 
         self._url = url
 
