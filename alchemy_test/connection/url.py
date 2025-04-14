@@ -8,6 +8,7 @@ import time
 from collections import deque
 from typing import Union
 
+from alchemy_test.connection.cmd import CMD
 from alchemy_test.transport.rsync import rsync
 from alchemy_test.transport.transport import Transport
 from alchemy_test.utils.ensure_list import ensure_list
