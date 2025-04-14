@@ -1,13 +1,16 @@
+import time
 from typing import Any, Callable, Dict, List, Union
 
 from alchemy_test.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandler
+from alchemy_test.engine.files.repo import Manifest
 from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
+from alchemy_test.utils.uuidmixin import UUIDMixin
 
 
-class ProcessHandler(ExecArgsMixin):
+class ProcessHandler(UUIDMixin, ExecArgsMixin):
     """
     Process is the main class used to tie Runners together
 
@@ -33,6 +36,7 @@ class ProcessHandler(ExecArgsMixin):
             **exec_args: Any
         ) -> None:
         self._function = Function(function)
+        self._uuid = self.function.uuid
 
         self._exec_args = exec_args
 
@@ -129,7 +133,36 @@ class ProcessHandler(ExecArgsMixin):
         self.runners[0].run()
 
     def query_remote(self):
-        return self.runners[0].query_remote()
+        content = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}").stdout
+
+        manifest = Manifest(instance_uuid=self.short_uuid)
+
+        for runner in self.runners:
+            data = manifest.get(uuid=runner.short_uuid, string=content)
+
+            runner._remote_status = data
+
+    @property
+    def is_finished(self):
+        self.query_remote()
+
+        return [r.is_finished for r in self.runners]
+
+    @property
+    def all_finished(self):
+        return all(self.is_finished)
+
+    def wait(self, interval: int = 1, timeout: int = 10) -> None:
+        dt = 0
+        while dt < timeout:
+            dt += interval
+
+            if self.all_finished:
+                return
+
+            time.sleep(interval)
+
+        raise RuntimeError("Wait Timed out")
 
 
 def Process(**run_args: Any) -> Callable[..., Any]:

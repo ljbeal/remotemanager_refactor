@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class Runner(UUIDMixin, ExecArgsMixin):
 
-    __slots__ = ["_idx", "_parent", "_call_args", "_uuid", "_files"]
+    __slots__ = ["_idx", "_parent", "_call_args", "_uuid", "_files", "_remote_status"]
 
     def __init__(
             self,
@@ -35,6 +35,8 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self._files.add_file(self.local_dir, self.remote_dir, "runfile", f"{self.name}-runfile.py")
 
         self._files.add_file(self.local_dir, self.remote_dir, "resultfile", f"{self.name}-result.json", send=False)
+
+        self._remote_status = []
 
     def __repr__(self) -> str:
         return self.name
@@ -163,10 +165,9 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
 
-    def query_remote(self):
-        content = self.url.cmd(f"cd {self.remote_dir} && cat {self.parent.files.manifest.name}").stdout
-
-        handler = repo.Manifest(instance_uuid=self.uuid)
-        data = handler.get(uuid=self.short_uuid, string = content)
-
-        return data
+    @property
+    def is_finished(self) -> bool:
+        for line in self._remote_status[::-1]:
+            if line.endswith("completed"):
+                return True
+        return False
