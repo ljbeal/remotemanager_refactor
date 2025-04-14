@@ -164,6 +164,17 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
 
         raise RuntimeError("Wait Timed out")
 
+    def fetch_results(self) -> bool:
+        fetched = False
+        for runner in self.runners:
+            if runner.is_finished:
+                self.url.transport.queue_for_pull(runner.files.resultfile)
+                fetched = True
+        
+        self.url.transport.transfer()
+
+        return fetched
+
 
 def Process(**run_args: Any) -> Callable[..., Any]:
     """
