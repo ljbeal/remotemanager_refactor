@@ -87,10 +87,10 @@ class Runner(UUIDMixin, ExecArgsMixin):
             os.makedirs(self.local_dir)
         
         self.parent.files.master.write(self.runline)
-        self.parent.files.repo.write("repo file")
+        self.files.jobscript.write(f"{self.url.python} {self.files.runfile.name}")
 
+        self.parent.files.repo.write("repo file")
         self.files.runfile.write("run file")
-        self.files.jobscript.write("jobscript file")
 
     def transfer(self):
         """
