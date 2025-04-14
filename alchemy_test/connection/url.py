@@ -317,14 +317,14 @@ class URL(UUIDMixin):
     @property
     def transport(self):
         if self._transport is None:
-            self._set_default_transport()
+            self._transport = self._get_default_transport()
         return self._transport
 
     def _validate_transport(
         self, transport: Union[None, Transport]
-    ) -> Union[None, Transport]:
+    ) -> Transport:
         if transport is None:
-            return None
+            transport = self._get_default_transport()
         if not isinstance(transport, Transport):
             raise ValueError(
                 f"{transport} is not a valid transport instance ({type(transport)})"
@@ -334,14 +334,14 @@ class URL(UUIDMixin):
     @transport.setter
     def transport(self, transport: Union[None, Transport]):
         if transport is None:
-            return self._set_default_transport()
+            transport = self._get_default_transport()
 
         transport = self._validate_transport(transport)
         self._transport = transport
         self._transport.set_remote(self)
 
-    def _set_default_transport(self):
-        self._transport = rsync(url=self, verbose=self.verbose)
+    def _get_default_transport(self) -> Transport:
+        return rsync(url=self, verbose=self.verbose)
 
     @property
     def ssh(self) -> str:
