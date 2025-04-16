@@ -7,6 +7,7 @@ import os
 import time
 from collections import deque
 from typing import Union
+from typing import Dict, Union, Tuple
 
 from alchemy_test.connection.cmd import CMD
 from alchemy_test.transport.rsync import rsync
@@ -877,7 +878,7 @@ class URLUtils:
 
         return output
 
-    def _file_mtime(self, files: list, local: bool, python: bool, dry_run: bool):
+    def _file_mtime(self, files: list, local: bool, python: bool, dry_run: bool) -> Tuple[Dict[str, Tuple[int, int]], str]:
         """
         Perform the "stat -c %Y" command on a list of files,
         returning the result. Uses a python command backup if this fails
@@ -893,11 +894,13 @@ class URLUtils:
                 print command only
 
         Returns:
-            (list): list of file unix times
+            dict[filename: (filemtime, filesize)]
+            int: cmd error code
+            str: cmd stderr
         """
         sep = ","
 
-        def stat():
+        def stat() -> Tuple[Dict[str, Tuple[int, int]], str, Union[int, None]]:
             basecmd = f"stat -c %n{sep}%Y{sep}%s"
             if len(files) == 1:
                 cmd = f"{basecmd} {files[0]}"
@@ -909,7 +912,8 @@ class URLUtils:
             )
 
             if dry_run:
-                return ret, "", "", ""
+                print(ret.sent)
+                return {}, "", None
 
             times = {}
             for line in ret.stdout.split("\n"):
@@ -922,9 +926,9 @@ class URLUtils:
                 except IndexError:
                     pass
 
-            return times, ret.stderr.split("\n"), ret.returncode, ret.stderr
+            return times, ret.stderr, ret.returncode
 
-        def pystat():
+        def pystat() -> Tuple[Dict[str, Tuple[int, int]], str]:
             ex = f"""import os
 files={files}
 for f in files:
@@ -938,7 +942,8 @@ for f in files:
             )
 
             if dry_run:
-                return ret, None
+                print(ret.sent)
+                return {}, ""
 
             times = {}
             error = []
@@ -952,13 +957,13 @@ for f in files:
                 except IndexError:
                     error.append(line.strip())
 
-            return times, error
+            return times, "\n".join(error)
 
         files = ensure_list(files)
 
         if not python:
-            t, e, returncode, stderr = stat()
-            if returncode in [126, 127] or "illegal option" in stderr:
+            t, e, returncode = stat()
+            if returncode in [126, 127] or "illegal option" in e:
                 return pystat()
 
             return t, e
