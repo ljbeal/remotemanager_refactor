@@ -13,6 +13,7 @@ from alchemy_test.transport.rsync import rsync
 from alchemy_test.transport.transport import Transport
 from alchemy_test.utils.ensure_list import ensure_list
 from alchemy_test.utils.format_iterable import format_iterable
+from alchemy_test.utils.random_string import random_string
 from alchemy_test.utils.uuidmixin import UUIDMixin
 from alchemy_test.utils.verbosedecorator import make_verbose
 from alchemy_test.utils.verbosity import Verbosity
