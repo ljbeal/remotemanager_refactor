@@ -6,7 +6,6 @@ import copy
 import os
 import time
 from collections import deque
-from typing import Union
 from typing import Dict, Union, Tuple
 
 from alchemy_test.connection.cmd import CMD
@@ -464,7 +463,7 @@ class URL(UUIDMixin):
         remote_port: int,
         local_address:  Union[str, None] = None,
         background: bool = False,
-        verbose: Union[None, int, float, Verbosity] = None,
+        verbose: Union[None, int, Verbosity] = None,
         dry_run: bool = False,
     ) -> CMD:
         """
@@ -787,7 +786,7 @@ class URL(UUIDMixin):
         raise NotImplementedError
 
     @staticmethod
-    def download_file(file_url: str, filename: str) -> None:
+    def download_file(file_url: str, filename: str, timeout: int = 120) -> None:
         """
         Download file at url `file_url` and write the content out to `filename`
 
@@ -797,7 +796,7 @@ class URL(UUIDMixin):
         """
         import requests
 
-        response = requests.get(file_url)
+        response = requests.get(file_url, timeout=timeout)
 
         if response.status_code == requests.codes.ok:
             # Save the file
