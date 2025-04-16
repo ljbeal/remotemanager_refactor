@@ -90,7 +90,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
         This Phase creates all necessary files and stages them within the local staging directory
         """
         # ensure the local staging dir exists
-        print(f"Staging {self}")
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
         
