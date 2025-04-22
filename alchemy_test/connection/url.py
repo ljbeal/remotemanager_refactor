@@ -6,7 +6,7 @@ import copy
 import os
 import time
 from collections import deque
-from typing import Dict, Union, Tuple
+from typing import Dict, List, Union, Tuple
 
 from alchemy_test.connection.cmd import CMD
 from alchemy_test.transport.rsync import rsync
@@ -286,7 +286,7 @@ class URL(UUIDMixin):
         self._shell = shell
 
     @property
-    def home(self) -> str:
+    def home(self) -> Union[str, None]:
         if self._home is None:
             self.gethome()
         return self._home
@@ -800,12 +800,12 @@ class URL(UUIDMixin):
 
         if response.status_code == requests.codes.ok:
             # Save the file
-            fld, file = os.path.split(filename)
+            fld, fname = os.path.split(filename)
             if fld != "" and not os.path.exists(fld):
                 os.makedirs(fld)
 
-            with open(filename, "wb") as file:
-                file.write(response.content)
+            with open(filename, "wb") as f:
+                f.write(response.content)
             print(f"Grabbed file '{filename}'")
         else:
             raise RuntimeError(f"Could not find a file at: {file_url}")
@@ -1003,11 +1003,11 @@ for f in files:
 
     def search_folder(
         self, 
-        files: list, 
+        files: Union[List[str], str],
         folder: str, 
         local: Union[bool, None] = None, 
         dry_run: bool = False
-    ) -> dict:
+    ) -> Union[List[str], dict]:
         """
         Search `folder` for `files`, returning a boolean presence dict
 
@@ -1030,6 +1030,8 @@ for f in files:
         fpath = os.path.abspath(folder) if local else folder
 
         ls_return = self.ls(fpath, local=local, as_list=True, dry_run=dry_run)
+        if isinstance(ls_return, CMD):
+            raise RuntimeError("ls returned a CMD object")
 
         if dry_run:
             return ls_return
@@ -1037,9 +1039,9 @@ for f in files:
         scan = [os.path.basename(f) for f in ls_return]
 
         if isinstance(files, str):
-            ret = {files: os.path.basename(files) in scan}
-        else:
-            ret = {file: os.path.basename(file) in scan for file in files}
+            files = [files]
+
+        ret = {file: os.path.basename(file) in scan for file in files}
 
         return ret
 
@@ -1110,7 +1112,7 @@ for f in files:
         local: Union[bool, None] = None,
         raise_errors: Union[bool, None] = None,
         dry_run: bool = False,
-    ) -> Union[CMD, list]:
+    ) -> Union[CMD, List[str]]:
         """
         Identify the files present on the directory
 
