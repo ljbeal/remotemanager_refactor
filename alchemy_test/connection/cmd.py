@@ -211,7 +211,7 @@ class CMD(UUIDMixin):
         return self._cached
 
     @property
-    def stdout(self) -> str:
+    def stdout(self) -> Union[str, None]:
         """
         Directly returns the stdout from the cmd execution. Attempts
         to communicate with the subprocess in the case of an async run.
@@ -228,7 +228,7 @@ class CMD(UUIDMixin):
         return self._stdout
 
     @property
-    def stderr(self) -> str:
+    def stderr(self) -> Union[str, None]:
         """
         Directly returns the stderr from the cmd execution. Attempts
         to communicate with the subprocess in the case of an async run.
@@ -245,7 +245,7 @@ class CMD(UUIDMixin):
         return self._stderr
 
     @property
-    def pwd(self) -> str:
+    def pwd(self) -> Union[str, None]:
         """
         Present working directory at command execution
 
@@ -257,7 +257,7 @@ class CMD(UUIDMixin):
         return self._pwd
 
     @property
-    def whoami(self) -> str:
+    def whoami(self) -> Union[str, None]:
         """
         Present user at command execution
 
@@ -269,7 +269,7 @@ class CMD(UUIDMixin):
         return self._whoami
 
     @property
-    def pid(self) -> int:
+    def pid(self) -> Union[int, None]:
         """
         The Process ID of the spawned process
 
@@ -617,9 +617,18 @@ class CMD(UUIDMixin):
         Returns (str, str):
             stdout, stderr
         """
+        if verbose is not None:
+            verbose = Verbosity(verbose)
+        else:
+            verbose = self.verbose
+        if not isinstance(verbose, Verbosity):
+            raise ValueError("verbose must be a Verbose object")
+
         timeout = self.timeout
         self._timeout_current_tries += 1
         dt = 0  # accumulate time on each retry, rather than the whole call
+        if self._subprocess is None:
+            return None, None
         try:
             t0 = time.time()
 
@@ -662,6 +671,8 @@ class CMD(UUIDMixin):
         """
         We are redirected to a file, attempt to read the output
         """
+        if self._subprocess is None:
+            return None, None
         self._subprocess.poll()
         returncode = self._subprocess.returncode
         count = 0
