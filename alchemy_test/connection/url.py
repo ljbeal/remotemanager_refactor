@@ -291,7 +291,7 @@ class URL(UUIDMixin):
             self.gethome()
         return self._home
 
-    def gethome(self) -> str:
+    def gethome(self) -> Union[str, None]:
         self._home = self.expandvars("$HOME")
         return self._home
 
@@ -622,7 +622,7 @@ class URL(UUIDMixin):
 
         return float(val) * 1e-3  # convert to seconds
 
-    def expandvars(self, string: str) -> str:
+    def expandvars(self, string: str) -> Union[str, None]:
         """
         'echo' a string on the remote, returning the result
 
@@ -857,7 +857,7 @@ class URLUtils:
             local = self._parent.is_local
 
         files = ensure_list(files)
-        times, error = self._file_mtime(files, local, python, dry_run)
+        times, _ = self._file_mtime(files, local, python, dry_run)
 
         if dry_run:
             # in this instance "times" is simply the command
@@ -913,9 +913,11 @@ class URLUtils:
             if dry_run:
                 print(ret.sent)
                 return {}, "", None
+            
+            err = ret.stdout or ""
 
             times = {}
-            for line in ret.stdout.split("\n"):
+            for line in err.split("\n"):
                 try:
                     fname = line.split(sep)[0]
                     mtime = int(float(line.split(sep)[1]))
@@ -925,7 +927,7 @@ class URLUtils:
                 except IndexError:
                     pass
 
-            return times, ret.stderr, ret.returncode
+            return times, err, ret.returncode
 
         def pystat() -> Tuple[Dict[str, Tuple[int, int]], str]:
             ex = f"""import os
@@ -944,9 +946,13 @@ for f in files:
                 print(ret.sent)
                 return {}, ""
 
+            if ret.stdout is None:
+                raise RuntimeError("Failed to execute command (stdout is None)")
+            err = ret.stdout or ""
+            
             times = {}
             error = []
-            for line in ret.stdout.split("\n"):
+            for line in err.split("\n"):
                 try:
                     fname = line.split(sep)[0]
                     mtime = int(float(line.split(sep)[1]))
@@ -1138,7 +1144,8 @@ for f in files:
         ret = self._parent.cmd(
             f"ls {fname}", local=local, raise_errors=raise_errors, dry_run=dry_run
         )
+        err = ret.stdout or ""
 
         if as_list and not dry_run:
-            ret = [f for f in ret.stdout.split("\n") if f != ""]
+            ret = [f for f in err.split("\n") if f != ""]
         return ret
