@@ -5,7 +5,7 @@ from alchemy_test.connection.cmd import CMD
 from alchemy_test.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandler
-from alchemy_test.engine.files.repo import Manifest
+from alchemy_test.engine.files.repo import Controller
 from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
 from alchemy_test.utils.uuidmixin import UUIDMixin
@@ -49,7 +49,8 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
 
         self._files = FileHandler()
         self._files.add_file(self.local_dir, self.remote_dir, "master", f"{self.name}-master.sh")
-        self._files.add_file(self.local_dir, self.remote_dir, "repo", f"{self.name}-repo.py")
+        self._files.add_file(self.local_dir, self.remote_dir, "data", f"{self.name}-data.py")
+        self._files.add_file(self.local_dir, self.remote_dir, "repo", "process-repo.py")
 
         self._files.add_file(self.local_dir, self.remote_dir, "manifest", f"{self.name}-manifest.txt", send=False)
 
@@ -142,7 +143,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
     def query_remote(self):
         content = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}").stdout
 
-        manifest = Manifest(instance_uuid=self.short_uuid)
+        manifest = Controller(uuid=self.short_uuid)
 
         for runner in self.runners:
             data = manifest.get(uuid=runner.short_uuid, string=content)

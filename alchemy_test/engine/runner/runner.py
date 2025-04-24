@@ -33,8 +33,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         self._files = FileHandler()
         self._files.add_file(self.local_dir, self.remote_dir, "jobscript", f"{self.name}-jobscript.sh")
-        self._files.add_file(self.local_dir, self.remote_dir, "runfile", f"{self.name}-runfile.py")
-
         self._files.add_file(self.local_dir, self.remote_dir, "resultfile", f"{self.name}-result.json", send=False)
 
         self._remote_status = []
@@ -93,6 +91,24 @@ class Runner(UUIDMixin, ExecArgsMixin):
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
         
+        # generate and add the per-runner lines
+        self.parent.files.master.write(f"export sourcedir=$PWD\nrm -rf {self.parent.files.manifest.name}")
+
+        with open(repo.__file__, "r") as o:
+            self.parent.files.repo.write(o.read())
+
+        self.parent.files.data.write("### Main Function ###\n")
+        self.parent.files.data.append(self.parent.function.raw_source)
+        self.parent.files.data.append("\n### Runner Inputs ###\n")
+
+        for runner in self.parent.runners:
+            self.parent.files.master.append(runner.runline)
+
+            runner.files.jobscript.write(f"{runner.url.python} process-repo.py {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}")
+
+            dumped_args = json.dumps(runner.call_args)
+            self.parent.files.data.append(f"runner_{runner.short_uuid}_input='{dumped_args}'\n")
+        
         return True
 
     def transfer(self):
@@ -101,7 +117,17 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         Transfers the content of the local staging dir to the remote directories as needed
         """
+        print(f"Transferring {self}")
         self.stage()
+
+        for runner in self.parent.runners:
+            for file in runner.files.files_to_send:
+                runner.url.transport.queue_for_push(file)
+        
+        for file in self.parent.files.files_to_send:
+            self.url.transport.queue_for_push(file)
+
+        self.url.transport.transfer()
 
     def run(self):
         """
@@ -112,7 +138,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         print(f"Running using {self} as the master")
         self.transfer()
 
-        # self.parent._run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
+        self.parent._run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
 
     @property
     def is_finished(self) -> bool:
