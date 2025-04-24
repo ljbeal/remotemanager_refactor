@@ -6,7 +6,7 @@ from alchemy_test.utils.verbosity import Verbosity
 
 
 # pylint: disable=protected-access
-def make_verbose(cls):
+def make_verbose(cls: type):
     """
     Adds the correct verbose properties to the class cls
 
@@ -18,18 +18,18 @@ def make_verbose(cls):
         cls, modified
     """
 
-    def get_verbose(self) -> Verbosity:
+    def get_verbose(self: type) -> Verbosity:
         """
         Return the current verbosity setting
 
         Returns:
             (Verbosity): current verbosity
         """
-        if not isinstance(self._verbose, Verbosity):
-            self._verbose = Verbosity(self._verbose)
+        if not isinstance(self._verbose, Verbosity):  # type: ignore
+            self._verbose = Verbosity(self._verbose)  # type: ignore
         return self._verbose
 
-    def set_verbose(self, verbose: Union[None, int, bool, Verbosity]) -> None:
+    def set_verbose(self: type, verbose: Union[None, int, bool, Verbosity]) -> None:
         """
         Verbosity setter
         """
