@@ -93,62 +93,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
         
-        # generate and add the per-runner lines
-        self.parent.files.master.write(f"export sourcedir=$PWD\nrm -rf {self.parent.files.manifest.name}")
-
-        nstaged = 0
-        for runner in self.parent.runners:
-            self.parent.files.master.append(runner.runline)
-
-            runner.files.jobscript.write(f"{runner.url.python} {runner.files.runfile.name}")
-
-            # write the actual run file
-
-            # script proper
-            runscript = [
-                "import importlib.util, os, sys, time",
-                "remote_path = os.path.expandvars('$sourcedir')",
-                f"path = os.path.join(remote_path, '{runner.parent.files.repo.name}')",
-                "spec = importlib.util.spec_from_file_location('repo', path)",
-                "repo = importlib.util.module_from_spec(spec)",
-                "spec.loader.exec_module(repo)\n",
-                f"manifest = repo.Manifest(instance_uuid='{runner.short_uuid}', filename='{runner.parent.files.manifest.name}')",
-                "manifest.runner_mode = True",
-                # need to add this instance of the manifest for the function
-                "repo.manifest = manifest",
-                "starttime = int(time.time())",
-                "manifest.write('started')",
-                "vmaj, vmin, vpat, *extra = sys.version_info",
-                "if vmaj < 3:",
-                "\tmanifest.write('failed - Python Version')",
-                '\traise RuntimeError(f"Python version {vmaj}.{vmin}.{vpat} < 3.x.x")',
-                f"call_args = {runner.call_args}",  # direct python dict serialisation only right now
-                f"try:\n\tresult = repo.{runner.parent.function.name}(**call_args)",
-                "except Exception:\n\tmanifest.write('failed')",
-                "\traise",
-                "else:",
-                f"\tlast_reported_starttime = manifest.last_time('started').get('"  # comma
-                f"{runner.short_uuid}', -1)",
-                "\tif last_reported_starttime <= starttime: # no output for outdated run",
-                "\t\tmanifest.write('completed')",
-                f"\t\tmanifest.dump_json"  # no comma
-                f"(result, '{runner.files.resultfile.name}')",
-            ]
-            runner.files.runfile.write("\n".join(runscript))
-            nstaged += 1
-
-        if nstaged == 0:
-            print("Staged 0 runners")
-            return False
-
-        # write out the repository
-        with open(repo.__file__, "r") as o:
-            self.parent.files.repo.write(o.read())
-        self.parent.files.repo.append("\n### Main Function ###\n")
-        self.parent.files.repo.append(self.parent.function.raw_source)
-
-        print(f"Staged {nstaged}/{len(self.parent.runners)} Runners")
-
         return True
 
     def transfer(self):
@@ -157,17 +101,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         Transfers the content of the local staging dir to the remote directories as needed
         """
-        print(f"Transferring {self}")
         self.stage()
-
-        for runner in self.parent.runners:
-            for file in runner.files.files_to_send:
-                runner.url.transport.queue_for_push(file)
-        
-        for file in self.parent.files.files_to_send:
-            self.url.transport.queue_for_push(file)
-
-        self.url.transport.transfer()
 
     def run(self):
         """
@@ -178,7 +112,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         print(f"Running using {self} as the master")
         self.transfer()
 
-        self.parent._run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
+        # self.parent._run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
 
     @property
     def is_finished(self) -> bool:
