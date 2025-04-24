@@ -79,7 +79,11 @@ class Runner(UUIDMixin, ExecArgsMixin):
         """
         Returns the string necessary to execute this runner
         """
-        return f"{self.url.submitter} {self.files.jobscript.name}"
+        runline =  f"{self.url.submitter} {self.files.jobscript.name}"
+        if self.exec_args.get("asynchronous", True):
+            runline += " &"
+        return runline
+        
 
     def stage(self) -> bool:
         """
