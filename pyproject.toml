@@ -46,6 +46,7 @@ exclude = [
     "**/test_*.py",
     "**/_build/**"
 ]
+typeCheckingMode = "strict"
 
 [tool.pyright]
 exclude = [
@@ -53,3 +54,4 @@ exclude = [
     "**/test_*.py",
     "**/_build/**"
 ]
+typeCheckingMode = "strict"
