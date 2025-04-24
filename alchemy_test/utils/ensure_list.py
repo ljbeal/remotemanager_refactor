@@ -1,7 +1,7 @@
-from typing import Any
+from typing import Any, List
 
 
-def ensure_list(inp: Any = None, semantic: bool = False) -> list:
+def ensure_list(inp: Any = None, semantic: bool = False) -> List[Any]:
     """
     Ensure that `inp` is list-type
 
@@ -23,7 +23,7 @@ def ensure_list(inp: Any = None, semantic: bool = False) -> list:
     if isinstance(inp, dict):
         return [inp]
     if isinstance(inp, (list, tuple, set)):
-        return list(inp)
+        return list(inp)  # type: ignore
     if isinstance(inp, (str, int, float)) and not semantic:
         return [inp]
 
