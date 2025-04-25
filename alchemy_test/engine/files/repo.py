@@ -8,6 +8,7 @@ import importlib
 import importlib.util
 import json
 import sys
+from types import ModuleType
 from typing import List, Union
 
 
@@ -107,10 +108,25 @@ class Controller:
         """
         return f"{self.process_name}-data.py"
 
+    def _import_data(self) -> ModuleType:
+        """
+        Import the data module
+        """
+        # import the data module
+        spec = importlib.util.spec_from_file_location("data", self.data_path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"Failed to load data module {self.data_path}")
+        data = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(data)
+
+        return data
+
     def submit(self, function_name: str):
         """
         Submit a job
         """
+        data = self._import_data()
+
         self.manifest.log("started")
         call_args = json.loads(getattr(data, f"runner_{self.uuid}_input"))
         function = getattr(data, function_name)
@@ -141,11 +157,5 @@ if __name__ == "__main__":
         raise ValueError("Repo must be called with uuid and process_name")
 
     c = Controller(uuid=uuid, runner_name=runner_name, process_name=process_name)
-
-    spec = importlib.util.spec_from_file_location("data", c.data_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Failed to load data module {c.data_path}")
-    data = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(data)
 
     c.submit(function_name)
