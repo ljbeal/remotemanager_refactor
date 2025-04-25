@@ -14,6 +14,76 @@ from typing import List, Union
 date_format = "%Y-%m-%d %H:%M:%S %z"
 
 
+class Manifest:
+    """
+    Handler for manifest related activities
+    """
+    def __init__(self, manifest_path: Union[str, None] = None, content: Union[str, None] = None, uuid: Union[str, None] = None):
+
+        if manifest_path is None and content is None:
+            raise ValueError("Either manifest_path or content must be provided")
+
+        self.manifest_path = manifest_path
+        self._content = content
+
+        self.uuid = uuid or "FFFFFFFF"
+
+    @property
+    def content(self) -> str:
+        if self._content is not None:
+            return self._content
+
+        if self.manifest_path is not None:
+            with open(file=self.manifest_path, mode="r") as f:
+                content = f.read()
+            return content
+
+        raise ValueError("Content read error, either manifest_path is missing or excplicit content is mangled")
+    
+    def now(self) -> str:
+        """
+        Get the current time in the correct format
+        """
+        return datetime.strftime(datetime.now(), date_format)
+
+    def to_timestamp(self, timestring: str) -> int:
+        """
+        Convert a time string to timestamp
+        """
+        return int(datetime.strptime(timestring, date_format).timestamp())
+    
+    def get(self, uuid: str) -> List[str]:
+        """
+        Retrieve all log entries for a given uuid
+
+        Args:
+            uuid (str):
+                uuid of the log entry to retrieve
+            string (Union[str, None]):
+                Override the source material
+        
+        Returns:
+            List[str]: list of log entries
+        """
+
+        log: List[str] = []
+        for line in self.content.split("\n"):
+            if uuid in line:
+                log.append(line.strip())
+        return log
+
+    def log(self, string: str):
+        """
+        Log to the manifest
+        """
+        if self.manifest_path is None:
+            return  # can't log to a file if no manifest path is set
+        
+        string = f"{self.now()} [{self.uuid}] {string.strip()}\n"
+        with open(self.manifest_path, "a+") as o:
+            o.write(string)
+
+
 class Controller:
     """
     Main runtime controller
@@ -28,58 +98,36 @@ class Controller:
         self.process_name = process_name
         self.runner_name = runner_name
 
-    def now(self) -> str:
-        return datetime.strftime(datetime.now(), date_format)
-
-    def to_timestamp(self, timestring: str) -> int:
-        return int(datetime.strptime(timestring, date_format).timestamp())
-    
-    @property
-    def manifest_path(self) -> str:
-        return  f"{self.process_name}-manifest.txt"
+        self.manifest = Manifest(f"{self.process_name}-manifest.txt", uuid=self.uuid)
     
     @property
     def data_path(self) -> str:
+        """
+        Path to the data store
+        """
         return f"{self.process_name}-data.py"
 
-    def log(self, string: str):
-        if self.process_name is None:
-            return
-        string = f"{self.now()} [{self.uuid}] {string.strip()}\n"
-        with open(self.manifest_path, "a+") as o:
-            o.write(string)
-    
-    def get(self, uuid: str, string: Union[str, None] = None) -> List[str]:
-        if string is not None:
-            lines = string.split("\n")
-        else:
-            with open(self.manifest_path, "r") as o:
-                lines = o.readlines()
-
-        log: List[str] = []
-        for line in lines:
-            if uuid in line:
-                log.append(line.strip())
-        return log
-
     def submit(self, function_name: str):
-        self.log("started")
+        """
+        Submit a job
+        """
+        self.manifest.log("started")
         call_args = json.loads(getattr(data, f"runner_{self.uuid}_input"))
         function = getattr(data, function_name)
 
         try:
             result = function(**call_args)
         except Exception as ex:
-            self.log("failed")
+            self.manifest.log("failed")
             raise ex
         else:
-            self.log("completed")
+            self.manifest.log("completed")
 
         try:
             with open(f"{self.runner_name}-result.json", "w+") as o:
                 json.dump(result, o)
         except Exception as ex:
-            self.log("serialisation error")
+            self.manifest.log("serialisation error")
             raise ex
 
 
