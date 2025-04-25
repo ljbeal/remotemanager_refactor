@@ -8,7 +8,7 @@ import threading
 import time
 import warnings
 from types import TracebackType
-from typing import Tuple, Union, Any, Type, Optional
+from typing import IO, Dict, List, Tuple, Union, Any, Type, Optional
 
 from alchemy_test.utils.uuidmixin import UUIDMixin
 from alchemy_test.utils.verbosedecorator import make_verbose
@@ -17,13 +17,13 @@ from alchemy_test.utils.verbosity import Verbosity
 logger = logging.getLogger(__name__)
 
 
-def _process_redirect_file(file) -> Union[str, None]:
+def _process_redirect_file(file: Union[str, None]) -> Union[str, None]:
     if file is not None:
         return os.path.abspath(file)
     return None
 
 
-def _clean_output(output) -> Union[str, None]:
+def _clean_output(output: Union[str, None]) -> Union[str, None]:
     """
     Wrapper for the string.strip() method, allowing None
 
@@ -39,7 +39,7 @@ def _clean_output(output) -> Union[str, None]:
     return output.strip()
 
 
-def detect_locale_error(stderr):
+def detect_locale_error(stderr: str) -> bool:
     """
     Given a stderr output string `stderr`, will regex search for the locale errors
 
@@ -95,7 +95,7 @@ class CMD(UUIDMixin):
         verbose: Union[None, int, bool, "Verbosity"] = None,
     ):
         self.verbose = verbose
-        self._uuid = self.generate_uuid(f"{time.time()} {cmd}")
+        self.generate_uuid(f"{time.time()} {cmd}")
         # command to execute
         self._cmd = cmd
         # settings
@@ -129,7 +129,7 @@ class CMD(UUIDMixin):
         self._timeout_current_tries = 0
 
         # call duration storage
-        self._duration = {}
+        self._duration: Dict[str, float] = {}
 
         # prefer to raise an error, or continue
         self._raise_errors = raise_errors
@@ -322,7 +322,7 @@ class CMD(UUIDMixin):
         return self.returncode == 0
 
     @property
-    def duration(self):
+    def duration(self) -> Dict[str, float]:
         return self._duration
 
     @property
@@ -341,6 +341,8 @@ class CMD(UUIDMixin):
             verbose = Verbosity(verbose)
         else:
             verbose = self.verbose
+        if not isinstance(verbose, Verbosity):
+            raise ValueError("verbose must be a Verbosity object")
         self._whoami = getpass.getuser()
         self._pwd = os.getcwd()
 
@@ -366,7 +368,7 @@ class CMD(UUIDMixin):
             self._fexec(stdout, stderr, verbose)
         logger.debug("Done, process PID is %s", self.pid)
 
-    def _exec(self, stdout, stderr, verbose) -> None:
+    def _exec(self, stdout: Union[int, IO[Any], None], stderr: Union[int, IO[Any], None], verbose: Verbosity) -> None:
         """
         Directly executes the command
 
@@ -375,6 +377,8 @@ class CMD(UUIDMixin):
                 stdout passthrough
             stderr:
                 stderr passthrough
+            verbose:
+                verbose passthrough
 
         Returns:
             None
@@ -394,7 +398,7 @@ class CMD(UUIDMixin):
             executable=hostexec,
         )
 
-        def capture_stream(stream, cache: list, print: bool) -> None:
+        def capture_stream(stream: IO[Any], cache: List[str], print: bool) -> None:
             """
             Subprocess struggles with streaming output if more than one pipe is assigned
 
@@ -431,12 +435,12 @@ class CMD(UUIDMixin):
 
         if self.stream:
             # if we're streaming, set up the threads
-            stdout_cache = []
+            stdout_cache: List[str] = []
             stdout_thread = threading.Thread(
                 target=capture_stream,
                 args=[self._subprocess.stdout, stdout_cache, True],
             )
-            stderr_cache = []
+            stderr_cache: List[str] = []
             stderr_thread = threading.Thread(
                 target=capture_stream,
                 args=[self._subprocess.stderr, stderr_cache, False],
@@ -459,7 +463,7 @@ class CMD(UUIDMixin):
             logger.debug("in-exec communication triggered")
             self.communicate(verbose=verbose)
 
-    def _fexec(self, stdout, stderr, verbose) -> None:
+    def _fexec(self, stdout: Union[int, IO[Any], None], stderr: Union[int, IO[Any], None], verbose: Verbosity) -> None:
         """
         Executes the command by first writing it to a file
 
@@ -468,6 +472,8 @@ class CMD(UUIDMixin):
                 stdout passthrough
             stderr:
                 stderr passthrough
+            verbose:
+                verbose passthrough
 
         Returns:
             None
@@ -502,7 +508,7 @@ class CMD(UUIDMixin):
         use_cache: bool = True,
         ignore_errors: Union[bool, None] = None,
         verbose: Union[None, int, bool, Verbosity] = None,
-    ) -> dict:
+    ) -> Dict[str, Union[str, None]]:
         """
         Communicates with the subprocess, returning the stdout and stderr in
         a dict
@@ -557,7 +563,7 @@ class CMD(UUIDMixin):
         self._stdout = _clean_output(std)
         self._stderr = _clean_output(err)
 
-        def format_output(string):
+        def format_output(string: Union[str, None]) -> Union[str, None]:
             if string is None:
                 return
 
@@ -650,8 +656,7 @@ class CMD(UUIDMixin):
             )
 
             if (
-                isinstance(self.max_timeouts, int)
-                and 0 < self.max_timeouts <= self._timeout_current_tries
+                0 < self.max_timeouts and self.max_timeouts <= self._timeout_current_tries
             ):
                 verbose.print("could not communicate, killing for safety", level=1)
                 self.kill()
