@@ -160,7 +160,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
     def all_finished(self):
         return all(self.is_finished)
 
-    def wait(self, interval: int = 1, timeout: int = 10) -> None:
+    def wait(self, interval: Union[int, float] = 1, timeout: int = 10) -> None:
         dt = 0
         while dt < timeout:
             dt += interval
