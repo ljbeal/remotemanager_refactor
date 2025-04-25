@@ -15,10 +15,9 @@ class UUIDMixin:
     def short_uuid(self) -> str:
         return self.uuid[:8]
     
-    @staticmethod
-    def generate_uuid(input: Any) -> str:
+    def generate_uuid(self, input: Any) -> str:
         """
-        Generates a UUID string from an input
+        Generates and sets a UUID string from an input
 
         Args:
             string:
@@ -31,4 +30,8 @@ class UUIDMixin:
         h = hashlib.sha256()
         h.update(bytes(input, "utf-8"))
 
-        return str(h.hexdigest())
+        uuid = str(h.hexdigest())
+
+        self._uuid = uuid
+
+        return uuid
