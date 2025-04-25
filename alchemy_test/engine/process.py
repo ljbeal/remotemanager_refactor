@@ -118,7 +118,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
             return True
         return False
     
-    def prepare(self, exec_args: Union[Dict[Any, Any], None] = None, **call_args):
+    def prepare(self, exec_args: Union[Dict[Any, Any], None] = None, **call_args: Any):
         """
         Prepares the process with the given exec arguments and call arguments
         """
@@ -141,9 +141,12 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         return self._run_cmd
 
     def query_remote(self):
-        content = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}").stdout
+        cmd = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}", raise_errors=False)
 
-        manifest = Manifest(content=content, uuid=self.short_uuid)
+        if "No such file or directory" in cmd.stderr:
+            return
+
+        manifest = Manifest(content=cmd.stdout, uuid=self.short_uuid)
 
         for runner in self.runners:
             data = manifest.get(uuid=runner.short_uuid)
