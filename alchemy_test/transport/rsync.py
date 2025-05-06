@@ -6,10 +6,14 @@ import logging
 import os.path
 import pathlib
 import re
-from typing import Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from alchemy_test.transport.transport import Transport
 from alchemy_test.utils.version import Version
+
+# TYPE_CHECKING is false at runtime, so does not cause a circular dependency
+if TYPE_CHECKING:
+    from alchemy_test.connection.url import URL
 
 
 logger = logging.getLogger(__name__)
@@ -33,21 +37,23 @@ class rsync(Transport):
             request streaming of rsync --progress stdout
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, url: Union[URL, None], *args: List[Any], **kwargs: Dict[Any, Any]):
+        super().__init__(url=url, *args, **kwargs)
 
         self.check_version()
 
         # flags can be exposed, to utilise their flexibility
         flags = kwargs.pop("flags", "auvh")
+        if not isinstance(flags, str):
+            raise ValueError("flags must be a string")
         self.flags = flags
 
         if kwargs.get("checksum", True):
-            self.flags += "--checksum"
+            self._flags += "--checksum"
 
         if "progress" in kwargs and kwargs["progress"]:
             logger.debug("rsync progress requested")
-            self.flags += "--progress"
+            self._flags += "--progress"
             self._request_stream = True
 
         logger.info("created new rsync transport")
@@ -79,7 +85,7 @@ class rsync(Transport):
             min_version = RSYNC_MIN_VERSION
 
         content = self.url.cmd("rsync --version", local=True).stdout
-        search = re.search(VERSION_REGEX, content)
+        search = re.search(pattern=VERSION_REGEX, string=str(content))
 
         if search is None:
             return Version("0.0.0")
@@ -96,7 +102,7 @@ class rsync(Transport):
 
         return version
 
-    def cmd(self, primary, secondary):
+    def cmd(self, primary: str,  secondary: str) -> str:
         if self.url.passfile and self.url.keyfile:
             raise RuntimeError(
                 "rsync appears to have an issue when "
