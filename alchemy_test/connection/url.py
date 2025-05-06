@@ -6,10 +6,11 @@ import copy
 import os
 import time
 from collections import deque
-from typing import Dict, List, Union, Tuple
+from typing import Any, Deque, Dict, List, Union, Tuple
 
 from alchemy_test.connection.cmd import CMD
 from alchemy_test.transport.rsync import rsync
+from alchemy_test.transport.scp import scp
 from alchemy_test.transport.transport import Transport
 from alchemy_test.utils.ensure_list import ensure_list
 from alchemy_test.utils.format_iterable import format_iterable
@@ -17,6 +18,9 @@ from alchemy_test.utils.random_string import random_string
 from alchemy_test.utils.uuidmixin import UUIDMixin
 from alchemy_test.utils.verbosedecorator import make_verbose
 from alchemy_test.utils.verbosity import Verbosity
+
+
+LOCALHOST = "localhost"
 
 
 @make_verbose
@@ -65,8 +69,6 @@ class URL(UUIDMixin):
             discarded
     """
 
-    _localhost = "localhost"
-
     _do_not_package = ["_urlutils"]
 
     _submitter_default = "bash"
@@ -94,8 +96,8 @@ class URL(UUIDMixin):
         ssh_override: Union[str, None] = None,
         quiet_ssh: bool = True,
         shebang: str = "#!/bin/bash",
-        transport: Union[None, Transport] = None,
-        **kwargs,
+        transport: Union[None, rsync, scp] = None,
+        **kwargs: Dict[Any, Any],
     ):
         self.verbose = verbose
         if verbose is not None:
@@ -112,7 +114,7 @@ class URL(UUIDMixin):
                     f'did you mean to set host="{user}"?'
                 )
 
-            host = URL._localhost
+            host = LOCALHOST
         elif "@" in host and user is None:
             user, host = host.split("@")
 
@@ -159,9 +161,9 @@ class URL(UUIDMixin):
         self._connection_test = None
 
         self._transport = self._validate_transport(transport)
-        self._uuid = self.generate_uuid(self._conn)
+        self.generate_uuid(self._conn)
 
-    def __deepcopy__(self, memo: dict):
+    def __deepcopy__(self, memo: Dict[Any, Any]):
         """
         Prevents a failure when copying a URL that has cmds in the history
 
@@ -197,14 +199,17 @@ class URL(UUIDMixin):
         return self._callcount
 
     @property
-    def user(self) -> str:
+    def user(self) -> Union[str, None]:
         """
         Currently configured username
         """
-        return self._conn["user"]
+        user = self._conn.get("user", None)
+        if isinstance(user, str):
+            return user
+        return
 
     @user.setter
-    def user(self, user):
+    def user(self, user: Union[str, None]):
         """
         Set the user attribute
         """
@@ -215,10 +220,13 @@ class URL(UUIDMixin):
         """
         Currently configured hostname
         """
-        return self._conn["host"] or URL._localhost
+        host = self._conn.get("host", None)
+        if isinstance(host, str):
+            return host
+        return LOCALHOST
 
     @host.setter
-    def host(self, host):
+    def host(self, host: Union[str, None]):
         """
         Set the host attribute
         """
@@ -230,10 +238,12 @@ class URL(UUIDMixin):
         Currently configured port (defaults to 22)
         """
         port = self._conn["port"] or 22
+        if not isinstance(port, int):
+            raise ValueError("port must be an integer")
         return port
 
     @port.setter
-    def port(self, port):
+    def port(self, port: int):
         """
         Set the host attribute
         """
@@ -266,21 +276,23 @@ class URL(UUIDMixin):
         self._ssh_prepend = val
 
     @property
-    def submitter(self):
+    def submitter(self) -> str:
         if self._submitter is not None:
             return self._submitter
-        return self._shell
+        return self.shell
 
     @submitter.setter
-    def submitter(self, submitter):
+    def submitter(self, submitter: str):
         self._submitter = submitter
 
     @property
-    def shell(self):
+    def shell(self) -> str:
+        if self._shell is None:
+            return "bash"
         return self._shell
 
     @shell.setter
-    def shell(self, shell):
+    def shell(self, shell: str):
         if self.submitter == self._submitter_default:
             self.submitter = shell
         self._shell = shell
@@ -305,25 +317,25 @@ class URL(UUIDMixin):
         self._home = None
 
     @property
-    def landing_dir(self):
+    def landing_dir(self) -> str:
         if self._landing_override is not None:
             return self._landing_override
 
         return "$HOME"
 
     @landing_dir.setter
-    def landing_dir(self, landing):
+    def landing_dir(self, landing: str):
         self._landing_override = landing
 
     @property
-    def transport(self):
-        if self._transport is None:
+    def transport(self) -> Union[rsync, scp]:
+        if self._transport is None:  # type: ignore
             self._transport = self._get_default_transport()
         return self._transport
 
     def _validate_transport(
-        self, transport: Union[None, Transport]
-    ) -> Transport:
+        self, transport: Union[None, rsync, scp]
+    ) -> Union[rsync, scp]:
         if transport is None:
             transport = self._get_default_transport()
         if not isinstance(transport, Transport):
@@ -333,7 +345,7 @@ class URL(UUIDMixin):
         return transport
 
     @transport.setter
-    def transport(self, transport: Union[None, Transport]):
+    def transport(self, transport: Union[None, rsync, scp]):
         if transport is None:
             transport = self._get_default_transport()
 
@@ -341,7 +353,7 @@ class URL(UUIDMixin):
         self._transport = transport
         self._transport.set_remote(self)
 
-    def _get_default_transport(self) -> Transport:
+    def _get_default_transport(self) -> rsync:
         return rsync(url=self, verbose=self.verbose)
 
     @property
@@ -355,7 +367,7 @@ class URL(UUIDMixin):
         if self._ssh_override:
             return self._ssh_override
 
-        ret = []
+        ret: List[str] = []
 
         if self.passfile is not None:
             ret.append(self.passfile)
@@ -409,7 +421,7 @@ class URL(UUIDMixin):
         self._ssh_override = None
 
     @property
-    def keyfile(self):
+    def keyfile(self) -> Union[str, None]:
         if self._keyfile is None:
             return
         p = self._keyfile.replace("~", os.environ["HOME"])
@@ -419,7 +431,7 @@ class URL(UUIDMixin):
         return self._keyfile
 
     @keyfile.setter
-    def keyfile(self, file):
+    def keyfile(self, file: str):
         self._keyfile = file
 
     @property
@@ -454,7 +466,7 @@ class URL(UUIDMixin):
         return f"sshpass -f {self._passfile}"
 
     @passfile.setter
-    def passfile(self, file):
+    def passfile(self, file: str):
         self._passfile = file
 
     def tunnel(
@@ -488,7 +500,7 @@ class URL(UUIDMixin):
                 The CMD instance responsible for the tunnel
         """
 
-        def validate_port(p: int) -> int:
+        def validate_port(p: Union[int, Any]) -> int:
             if not isinstance(p, int):
                 raise ValueError(f"Port {p} is not int type")
             if p <= 1024:
@@ -528,12 +540,12 @@ class URL(UUIDMixin):
         return t
 
     @property
-    def is_local(self):
+    def is_local(self) -> bool:
         """
         True if this connection is purely local
         """
         host = self.host
-        if host == URL._localhost:
+        if host == LOCALHOST:
             return True
         elif host.startswith("127."):
             return True
@@ -568,7 +580,7 @@ class URL(UUIDMixin):
 
         tmpfile = f"ping_{random_string()}"
 
-        def cleanup(process):
+        def cleanup(process: CMD) -> None:
             process.kill(verbose=verbose)
             try:
                 os.remove(tmpfile)
@@ -742,7 +754,7 @@ class URL(UUIDMixin):
         return thiscmd
 
     @property
-    def cmd_history(self):
+    def cmd_history(self) -> Deque[CMD]:
         return self._cmd_history
 
     @property
@@ -750,7 +762,7 @@ class URL(UUIDMixin):
         return self._cmd_history_depth
 
     def reset_cmd_history(self):
-        self._cmd_history = deque(maxlen=self._cmd_history_depth)
+        self._cmd_history: Deque[CMD] = deque(maxlen=self._cmd_history_depth)
 
     @cmd_history_depth.setter
     def cmd_history_depth(self, newdepth: int):
@@ -766,7 +778,7 @@ class URL(UUIDMixin):
         """
         self._cmd_history_depth = newdepth
 
-        newqueue = deque(maxlen=self.cmd_history_depth)
+        newqueue: Deque[CMD] = deque(maxlen=self.cmd_history_depth)
 
         for item in self.cmd_history:
             newqueue.append(item)
@@ -774,7 +786,7 @@ class URL(UUIDMixin):
         self._cmd_history = newqueue
 
     @property
-    def utils(self):
+    def utils(self) -> "URLUtils":
         """
         Handle for the URLUtils module
         """
@@ -782,7 +794,7 @@ class URL(UUIDMixin):
             self._urlutils = URLUtils(self)
         return self._urlutils
 
-    def script(self, **kwargs):
+    def script(self, **kwargs: Dict[Any, Any]) -> str:
         raise NotImplementedError
 
     @staticmethod
@@ -800,7 +812,7 @@ class URL(UUIDMixin):
 
         if response.status_code == requests.codes.ok:
             # Save the file
-            fld, fname = os.path.split(filename)
+            fld = os.path.split(filename)[0]
             if fld != "" and not os.path.exists(fld):
                 os.makedirs(fld)
 
@@ -829,12 +841,12 @@ class URLUtils:
 
     def file_mtime(
         self,
-        files: list,
+        files: Union[List[str], str],
         local: Union[bool, None] = None,
         python: bool = False,
         ignore_empty: bool = False,
         dry_run: bool = False,
-    ) -> dict:
+    ) -> Dict[str, int]:
         """
         Check file modification times of [files]
 
@@ -877,7 +889,13 @@ class URLUtils:
 
         return output
 
-    def _file_mtime(self, files: list, local: bool, python: bool, dry_run: bool) -> Tuple[Dict[str, Tuple[int, int]], str]:
+    def _file_mtime(
+            self, 
+            files: List[str], 
+            local: bool, 
+            python: bool, 
+            dry_run: bool
+            ) -> Tuple[Dict[str, Tuple[int, int]], str]:
         """
         Perform the "stat -c %Y" command on a list of files,
         returning the result. Uses a python command backup if this fails
@@ -977,10 +995,10 @@ for f in files:
 
     def file_presence(
         self, 
-        files: list, 
+        files: Union[List[str], str], 
         local: Union[bool, None] = None, 
         dry_run: bool = False
-    ) -> dict:
+    ) -> Dict[str, bool]:
         """
         Search for a list of files, returning a boolean presence dict
 
@@ -1013,7 +1031,7 @@ for f in files:
         folder: str, 
         local: Union[bool, None] = None, 
         dry_run: bool = False
-    ) -> Union[List[str], dict]:
+    ) -> Dict[List[str], bool]:
         """
         Search `folder` for `files`, returning a boolean presence dict
 

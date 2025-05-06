@@ -4,8 +4,9 @@ Baseclass for any file transfer
 
 import logging
 import os.path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Dict, List, Union
 
+from alchemy_test.connection.cmd import CMD
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.ensure_list import ensure_list
 from alchemy_test.utils.ensure_dir import ensure_dir
@@ -37,15 +38,13 @@ class Transport:
 
     def __init__(
         self,
-        url=None,
+        url: Union[URL, None],
         dir_mode: bool = False,
         flags: Union[str, None] = None,
         verbose: Union[None, int, bool, "Verbosity"] = None,
-        *args,
-        **kwargs,
     ):
         self.verbose = verbose
-        self._remote_address = None
+        self._remote_address: Union[str, None] = None
 
         if url is None:
             # deferred import required to prevent circular import issue with URL
@@ -61,7 +60,7 @@ class Transport:
         else:
             self._flags = Flags()
 
-        self._transfers = {}
+        self._transfers: Dict[str, List[str]] = {}
         self._cmds = []
         self._request_stream = False
 
@@ -76,8 +75,11 @@ class Transport:
         self._dir_mode = mode
 
     def queue_for_push(
-        self, files: Union[list, str, TrackedFile], local: Union[str, None] = None, remote: Union[str, None] = None
-    ):
+        self, 
+        files: Union[List[str], str, TrackedFile], 
+        local: Union[str, None] = None, 
+        remote: Union[str, None] = None
+    ) -> None:
         """
         Queue file(s) for sending (pushing)
 
@@ -101,8 +103,11 @@ class Transport:
         self.add_transfer(files, local, remote, "push")
 
     def queue_for_pull(
-        self, files: Union[list, str, TrackedFile], local: Union[str, None] = None, remote: Union[str, None] = None
-    ):
+        self, 
+        files: Union[List[str], str, TrackedFile], 
+        local: Union[str, None] = None, remote: 
+        Union[str, None] = None
+    ) -> None:
         """
         Queue file(s) for retrieving (pulling)
 
@@ -127,7 +132,7 @@ class Transport:
 
     def add_transfer(
         self,
-        files: Union[list, str],
+        files: Union[List[str], str],
         origin: Union[str, None],
         target: Union[str, None],
         mode: str,
@@ -177,9 +182,9 @@ class Transport:
         logger.info("for files %s", files)
 
         if pair in self._transfers:
-            self._transfers[pair] = self._transfers[pair].union(set(files))
+            self._transfers[pair] = list(set(self._transfers[pair]).union(set(files)))
         else:
-            self._transfers[pair] = set(files)
+            self._transfers[pair] = list(set(files))
 
     def _add_address(self, dir: str) -> str:
         """
@@ -193,12 +198,12 @@ class Transport:
             (str) dir
         """
         dir = os.path.join(dir, "")  # ensure there's a trailing slash for split_pair
-        if self.address is None:
+        if self.address is None:  # type: ignore
             return dir
         return f"{self.address}:{dir}"
 
     @staticmethod
-    def _format_for_cmd(folder: str, inp: list) -> str:
+    def _format_for_cmd(folder: str, inp: List[str]) -> str:
         """
         Formats a list into a bash expandable command with brace expansion
 
@@ -214,7 +219,7 @@ class Transport:
 
         if isinstance(inp, str):
             raise ValueError(
-                "files is stringtype, " "was a transfer forced into the queue?"
+                "files is stringtype, was a transfer forced into the queue?"
             )
 
         if len(inp) > 1:
@@ -222,7 +227,7 @@ class Transport:
         return os.path.join(folder, inp[0])
 
     @property
-    def transfers(self) -> dict:
+    def transfers(self) -> Dict[str, List[str]]:
         """
         Return the current transfer dict
 
@@ -252,7 +257,7 @@ class Transport:
                 print(f"\t({j}/{len(files)}) {file}")
 
     @property
-    def address(self):
+    def address(self) -> Union[str, None]:
         """
         return the remote address
 
@@ -262,7 +267,7 @@ class Transport:
         return self._remote_address
 
     @address.setter
-    def address(self, remote_address):
+    def address(self, remote_address: str):
         """
         set the remote address
 
@@ -272,7 +277,7 @@ class Transport:
         self._remote_address = remote_address
 
     @property
-    def url(self) -> "URL":  # noqa: F821
+    def url(self) -> "URL":
         if self._url is not None:
             return self._url
 
@@ -280,10 +285,10 @@ class Transport:
         return URL()
 
     @url.setter
-    def url(self, url):
+    def url(self, url: URL):
         self._url = url
 
-    def set_remote(self, url=None):
+    def set_remote(self, url: Union[URL, None] = None):
         """
         set the remote address with a URL object
 
@@ -293,12 +298,12 @@ class Transport:
         logger.info("setting rsync url to %s", url)
         if url is None:
             logger.info(
-                "url is None, setting None)",
+                "url is None, setting None",
             )
             self._remote_address = None
         elif url.is_local:
             logger.info(
-                "url is local, setting None)",
+                "url is local, setting None",
             )
             self._remote_address = None
         else:
@@ -309,11 +314,11 @@ class Transport:
             self.url = url
 
     @property
-    def flags(self):
+    def flags(self) -> Flags:
         return self._flags
 
     @flags.setter
-    def flags(self, new):
+    def flags(self, new: str):
         self._flags = Flags(str(new))
 
     def cmd(self, primary: str, secondary: str) -> str:
@@ -361,7 +366,7 @@ class Transport:
         raise_errors: bool = True,
         dir_mode: Union[bool, None] = None,
         verbose: Union[None, int, bool, Verbosity] = None,
-    ):
+    ) -> List[CMD]:
         """
         Perform the actual transfer
 
@@ -435,7 +440,7 @@ class Transport:
             commands.append(base_cmd)
 
         if dry_run:
-            self._cmds = [
+            self._cmds: List[CMD] = [
                 self.url.cmd(cmd, dry_run=True, local=True, prepend=prepend)
                 for cmd in commands
             ]
@@ -444,7 +449,7 @@ class Transport:
         nfiles = sum(len(filelist) for filelist in self.transfers.values())
         if nfiles == 0:
             verbose.print("No Transfer Required", level=1)
-            return
+            return []
 
         filestr = "File" if nfiles == 1 else "Files"
 
@@ -483,6 +488,7 @@ class Transport:
             self.url.cmd(
                 f"rm -rf {dir}", prepend=prepend, raise_errors=raise_errors, local=local
             )
+        return self._cmds
 
     def wipe_transfers(self):
         logger.info("wiping transfers")
@@ -493,13 +499,13 @@ class Transport:
         return self._cmds
 
     @staticmethod
-    def split_pair(pair: str) -> list:
+    def split_pair(pair: str) -> list[str]:
         """
         Convert a "dir>dir" string into list format
 
         Args:
-            pair (tuple):
-                (dir, dir) tuple to be split
+            pair (str):
+                "dir>dir" string to be split
 
         Returns (list):
             [dir, dir]
@@ -508,7 +514,7 @@ class Transport:
         return [ensure_dir(os.path.split(p)[0]) for p in pair.split(">")]
 
     @staticmethod
-    def get_remote_dir(path):
+    def get_remote_dir(path: str) -> str:
         if ":" not in path:
             return path
         return path.split(":")[1]
