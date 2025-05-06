@@ -27,7 +27,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
     A Process can be created by the process decorator, which will handle the wrapping for you.
     """
 
-    __slots__ = ["_function", "_runners", "_name", "_files", "_url", "_run_cmd"]
+    __slots__ = ["_function", "_runners", "_name", "_files", "_url", "run_cmd"]
 
     def __init__(
             self,
@@ -56,7 +56,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
 
         self._url = url
 
-        self._run_cmd: Union[CMD, None] = None
+        self.run_cmd: Union[CMD, None] = None
 
     def __repr__(self) -> str:
         # return a string representation of this Process instance
@@ -135,10 +135,6 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
             bool: True if the process was executed, False otherwise (in a skip or no-runner situation)
         """
         self.runners[0].run()
-
-    @property
-    def run_cmd(self) -> Union[CMD, None]:
-        return self._run_cmd
 
     def query_remote(self):
         cmd = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}", raise_errors=False)
