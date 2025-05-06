@@ -2,7 +2,7 @@ import os
 import re
 import time
 from datetime import datetime, timezone
-from typing import Union
+from typing import List, Union
 
 from alchemy_test.utils.dir_delta import dir_delta
 
@@ -48,8 +48,6 @@ class TrackedFile:
 
     @binary.setter
     def binary(self, value: bool):
-        if not isinstance(value, bool):
-            raise ValueError("binary attribute must be bool.")
         self._binary = value
 
     @property
@@ -145,7 +143,7 @@ class TrackedFile:
             return o.read()
 
     def _write(
-        self, content: Union[str, list], append: bool, add_newline: bool
+        self, content: Union[str, List[str]], append: bool, add_newline: bool
     ) -> None:
         """
         Write to the file
@@ -191,7 +189,7 @@ class TrackedFile:
 
         self.confirm_local()
 
-    def write(self, content: Union[str, list], add_newline: bool = True) -> None:
+    def write(self, content: Union[str, List[str]], add_newline: bool = True) -> None:
         """
         Write `content` to the local copy of the file
 
@@ -204,7 +202,7 @@ class TrackedFile:
         """
         self._write(content, append=False, add_newline=add_newline)
 
-    def append(self, content: Union[str, list], add_newline: bool = True) -> None:
+    def append(self, content: Union[str, List[str]], add_newline: bool = True) -> None:
         """
         Append `content` to the local copy of the file
 
@@ -289,7 +287,7 @@ class TrackedFile:
         """Sets the filesize"""
         self._size = size
 
-    def sub(self, source, target, mode: str = "python") -> bool:
+    def sub(self, source: str, target: str, mode: str = "python") -> bool:
         """
         Substitute source for target
 
@@ -324,8 +322,6 @@ class TrackedFile:
         python3 chmod requires an octal input, so convert the base10 input
         """
         if self.exists_local:
-            if not isinstance(mod, int):
-                raise ValueError(f"chmod {mod} must be int-type")
 
             convert = f"0o{mod}"
             if len(convert) > 6:
