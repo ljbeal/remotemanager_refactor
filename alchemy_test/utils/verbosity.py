@@ -88,7 +88,6 @@ class Verbosity:
             print(message, end=end)
 
 
-
 class VerboseMixin:
     __slots__ = ["_verbose"]
 
