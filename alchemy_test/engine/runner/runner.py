@@ -1,6 +1,6 @@
 import json
 import os
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandler
@@ -35,7 +35,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self._files.add_file(self.local_dir, self.remote_dir, "jobscript", f"{self.name}-jobscript.sh")
         self._files.add_file(self.local_dir, self.remote_dir, "resultfile", f"{self.name}-result.json", send=False)
 
-        self._remote_status = []
+        self._remote_status: List[str] = []
         self._result = None
 
     def __repr__(self) -> str:
