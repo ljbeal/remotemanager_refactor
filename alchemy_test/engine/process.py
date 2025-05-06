@@ -4,11 +4,45 @@ from typing import Any, Callable, Dict, List, Union
 from alchemy_test.connection.cmd import CMD
 from alchemy_test.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
-from alchemy_test.engine.files.filehandler import FileHandler
+from alchemy_test.engine.files.filehandler import FileHandlerBaseClass
 from alchemy_test.engine.files.repo import Manifest
 from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
+from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
+
+
+class ProcessFileHandler(FileHandlerBaseClass):
+    """
+    Extends the filehandler to contain Process related files
+    """
+
+    __slots__ = ["master", "data", "repo", "manifest"]
+
+    def __init__(
+            self,
+            master: TrackedFile,
+            data: TrackedFile,
+            repo: TrackedFile,
+            manifest: TrackedFile,
+            ):
+        super().__init__()
+
+        self.master = master
+        self.data = data
+        self.repo = repo
+        self.manifest = manifest
+
+        self._files = {
+            "master": master,
+            "data": data,
+            "repo": repo,
+            "manifest": manifest
+        }
+
+    @property
+    def files_to_send(self) -> List[TrackedFile]:
+        return [self.master, self.data, self.repo]
 
 
 class ProcessHandler(UUIDMixin, ExecArgsMixin):
@@ -47,12 +81,12 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
 
         self._runners: Dict[str, Runner] = {}
 
-        self._files = FileHandler()
-        self._files.add_file(self.local_dir, self.remote_dir, "master", f"{self.name}-master.sh")
-        self._files.add_file(self.local_dir, self.remote_dir, "data", f"{self.name}-data.py")
-        self._files.add_file(self.local_dir, self.remote_dir, "repo", "process-repo.py")
-
-        self._files.add_file(self.local_dir, self.remote_dir, "manifest", f"{self.name}-manifest.txt", send=False)
+        self._files = ProcessFileHandler(
+            master = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-master.sh"),
+            data = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-data.py"),
+            repo = TrackedFile(self.local_dir, self.remote_dir, "process-repo.py"),
+            manifest = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-manifest.txt"),
+        )
 
         self._url = url
 
@@ -93,7 +127,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         return self._url
     
     @property
-    def files(self) -> FileHandler:
+    def files(self) -> ProcessFileHandler:
         """
         Returns the FileHandler object associated with this process
         """
@@ -175,7 +209,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         fetched = False
         for runner in self.runners:
             if runner.is_finished:
-                self.url.transport.queue_for_pull(runner.files.resultfile)
+                self.url.transport.queue_for_pull(runner.files.result)
                 fetched = True
         
         self.url.transport.transfer()

@@ -3,29 +3,21 @@ from typing import Dict, List
 from alchemy_test.storage.trackedfile import TrackedFile
 
 
-class FileHandler:
+class FileHandlerBaseClass:
+    """
+    Stub class allows deferral of file access on Process from
+    obj.file to obj.files.file
+    """
 
-    __slots__ = ["_files", "_do_not_send"]
+    __slots__ = ["_files"]
     
-    def __init__(self):
-        
+    def __init__(self):        
         self._files: Dict[str, TrackedFile] = {}
-        self._do_not_send: List[str] = []
-
-    def add_file(self, local_dir: str, remote_dir: str, endpoint: str, filename: str, send: bool = True) -> None:
-        self._files[endpoint] = TrackedFile(local_dir, remote_dir, filename)
-        if not send:
-            self._do_not_send.append(endpoint)
-
-    def __getattribute__(self, name: str):
-        if name != "_files" and name in self._files:
-            return self._files[name]
-        return object.__getattribute__(self, name)
 
     @property
     def files(self) -> List[TrackedFile]:
         return list(self._files.values())
-    
+
     @property
     def files_to_send(self) -> List[TrackedFile]:
-        return [f for e, f in self._files.items() if e not in self._do_not_send]
+        return NotImplemented

@@ -3,7 +3,8 @@ import os
 from typing import TYPE_CHECKING, Any, Dict, List
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
-from alchemy_test.engine.files.filehandler import FileHandler
+from alchemy_test.engine.files.filehandler import FileHandlerBaseClass
+from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
 
 import alchemy_test.engine.files.repo as repo
@@ -11,6 +12,33 @@ import alchemy_test.engine.files.repo as repo
 # TYPE_CHECKING is false at runtime, so does not cause a circular dependency
 if TYPE_CHECKING:
     from alchemy_test.engine.process import ProcessHandler
+
+
+class RunnerFileHandler(FileHandlerBaseClass):
+    """
+    Extends the filehandler to contain Process related files
+    """
+
+    __slots__ =["jobscript", "result"]
+
+    def __init__(
+            self,
+            jobscript: TrackedFile,
+            result: TrackedFile,
+            ):
+        super().__init__()
+
+        self.jobscript = jobscript
+        self.result = result
+
+        self._files = {
+            "jobscript": jobscript,
+            "result": result
+        }
+
+    @property
+    def files_to_send(self) -> List[TrackedFile]:
+        return [self.jobscript]
 
 
 class Runner(UUIDMixin, ExecArgsMixin):
@@ -31,10 +59,11 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         self._uuid = self.generate_uuid(self.call_args)
 
-        self._files = FileHandler()
-        self._files.add_file(self.local_dir, self.remote_dir, "jobscript", f"{self.name}-jobscript.sh")
-        self._files.add_file(self.local_dir, self.remote_dir, "resultfile", f"{self.name}-result.json", send=False)
-
+        self._files = RunnerFileHandler(
+            jobscript = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-jobscript.sh"),
+            result = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-result.json")
+        )
+        
         self._remote_status: List[str] = []
         self._result = None
 
@@ -58,7 +87,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         return f"{self.parent.name}-runner-{self.idx}"
     
     @property
-    def files(self) -> FileHandler:
+    def files(self) -> RunnerFileHandler:
         return self._files
     
     @property
@@ -83,7 +112,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
         if self.exec_args.get("asynchronous", True):
             runline += " &"
         return runline
-        
 
     def stage(self) -> bool:
         """
@@ -156,6 +184,6 @@ class Runner(UUIDMixin, ExecArgsMixin):
         return self._result
     
     def read_local_files(self) -> None:
-        if self.files.resultfile.exists_local:
-            with open(self.files.resultfile.local, "r") as o:
+        if self.files.result.exists_local:
+            with open(self.files.result.local, "r") as o:
                 self._result = json.load(o)
