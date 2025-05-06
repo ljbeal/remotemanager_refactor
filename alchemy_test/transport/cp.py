@@ -3,7 +3,7 @@ Handles file transfer via `cp`
 """
 
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from alchemy_test.transport.transport import Transport
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class cp(Transport):
 
-    def __init__(self, url: Union[URL, None], *args: List[Any], **kwargs: Dict[Any, Any]):
+    def __init__(self, url: Union[URL, None], *args: Any, **kwargs: Any):
         super().__init__(url=url, *args, **kwargs)
 
         logger.info("created new cp transport")

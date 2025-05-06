@@ -6,7 +6,7 @@ import logging
 import os.path
 import pathlib
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from alchemy_test.transport.transport import Transport
 from alchemy_test.utils.version import Version
@@ -37,7 +37,7 @@ class rsync(Transport):
             request streaming of rsync --progress stdout
     """
 
-    def __init__(self, url: Union[URL, None], *args: List[Any], **kwargs: Dict[Any, Any]):
+    def __init__(self, url: Union[URL, None], *args: Any, **kwargs: Any):
         super().__init__(url=url, *args, **kwargs)
 
         self.check_version()

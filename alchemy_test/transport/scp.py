@@ -4,7 +4,7 @@ Handles file transfer via the `scp` protocol
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, List, Union
 
 from alchemy_test.transport.transport import Transport
 from alchemy_test.utils.ensure_list import ensure_list
@@ -26,7 +26,7 @@ class scp(Transport):
             url to extract remote address from
     """
 
-    def __init__(self, url: Union[URL, None], *args: List[Any], **kwargs: Dict[Any, Any]):
+    def __init__(self, url: Union[URL, None], *args: Any, **kwargs: Any):
         super().__init__(url=url, *args, **kwargs)
 
         # flags can be exposed, to utilise their flexibility
