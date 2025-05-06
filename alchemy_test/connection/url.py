@@ -11,7 +11,6 @@ from typing import Any, Deque, Dict, List, Union, Tuple
 from alchemy_test.connection.cmd import CMD
 from alchemy_test.transport.rsync import rsync
 from alchemy_test.transport.scp import scp
-from alchemy_test.transport.transport import Transport
 from alchemy_test.utils.ensure_list import ensure_list
 from alchemy_test.utils.format_iterable import format_iterable
 from alchemy_test.utils.random_string import random_string
@@ -595,7 +594,7 @@ class URL(UUIDMixin, VerboseMixin):
 
         cleanup(ping)
 
-        times = []
+        times: List[float] = []
         for line in lines[1:]:
             times.append(self._process_ping_line(line))
 
@@ -834,7 +833,7 @@ class URLUtils:
         python: bool = False,
         ignore_empty: bool = False,
         dry_run: bool = False,
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Union[int, None]]:
         """
         Check file modification times of [files]
 
@@ -860,10 +859,10 @@ class URLUtils:
         times, _ = self._file_mtime(files, local, python, dry_run)
 
         if dry_run:
-            # in this instance "times" is simply the command
-            return times
+            # just print
+            return {}
 
-        output = {}
+        output: Dict[str, Union[int, None]] = {}
         for file in files:
             if file in times:
                 mtime = times[file][0]
@@ -922,7 +921,7 @@ class URLUtils:
             
             err = ret.stdout or ""
 
-            times = {}
+            times: Dict[str, Tuple[int, int]] = {}
             for line in err.split("\n"):
                 try:
                     fname = line.split(sep)[0]
@@ -956,8 +955,8 @@ for f in files:
                 raise RuntimeError("Failed to execute command (stdout is None)")
             err = ret.stdout or ""
             
-            times = {}
-            error = []
+            times: Dict[str, Tuple[int, int]] = {}
+            error: List[str] = []
             for line in err.split("\n"):
                 try:
                     fname = line.split(sep)[0]
@@ -1009,7 +1008,7 @@ for f in files:
         times = self.file_mtime(files, local=local, dry_run=dry_run)
 
         if dry_run:
-            return times
+            return {}
 
         return {f: times[f] is not None for f in files}
 
@@ -1019,7 +1018,7 @@ for f in files:
         folder: str, 
         local: Union[bool, None] = None, 
         dry_run: bool = False
-    ) -> Dict[List[str], bool]:
+    ) -> Dict[str, bool]:
         """
         Search `folder` for `files`, returning a boolean presence dict
 
@@ -1046,14 +1045,14 @@ for f in files:
             raise RuntimeError("ls returned a CMD object")
 
         if dry_run:
-            return ls_return
+            return {}
 
         scan = [os.path.basename(f) for f in ls_return]
 
         if isinstance(files, str):
             files = [files]
 
-        ret = {file: os.path.basename(file) in scan for file in files}
+        ret: Dict[str, bool] = {file: os.path.basename(file) in scan for file in files}
 
         return ret
 
