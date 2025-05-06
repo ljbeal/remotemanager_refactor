@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Union
 
 
 class Version:
@@ -16,8 +16,8 @@ class Version:
             Semantic version in x.y.z form
     """
 
-    def __init__(self, ver):
-        tmp = [0, 0, 0]
+    def __init__(self, ver: str):
+        tmp: List[Union[str, int]] = [0, 0, 0]
         for idx, item in enumerate(ver.split(".")):
             try:
                 tmp[idx] = int(item)
@@ -26,12 +26,15 @@ class Version:
 
         self._major, self._minor, self._patch = tmp
 
-    def _coerce_version(self, other):
+    def _coerce_version(self, other: object) -> "Version":
+        if not isinstance(other, (str, Version)):
+               raise TypeError("Version must be a string or another Version instance")
+
         if not isinstance(other, Version):
             other = Version(other)
         return other
 
-    def _compare(self, other):
+    def _compare(self, other: "Version") -> int:
         if (
             isinstance(self.major, int)
             and isinstance(other.major, int)
@@ -52,26 +55,26 @@ class Version:
             return -1 if self.patch < other.patch else 1
         return 0
 
-    def __eq__(self, other):
+    def __eq__(self, other: object):
         other = self._coerce_version(other)
         return self._compare(other) == 0
 
-    def __ne__(self, other):
+    def __ne__(self, other: object):
         return not self.__eq__(other)
 
-    def __lt__(self, other):
+    def __lt__(self, other: object):
         other = self._coerce_version(other)
         return self._compare(other) < 0
 
-    def __gt__(self, other):
+    def __gt__(self, other: object):
         other = self._coerce_version(other)
         return self._compare(other) > 0
 
-    def __le__(self, other):
+    def __le__(self, other: object):
         other = self._coerce_version(other)
         return self._compare(other) <= 0
 
-    def __ge__(self, other):
+    def __ge__(self, other: object):
         other = self._coerce_version(other)
         return self._compare(other) >= 0
 
