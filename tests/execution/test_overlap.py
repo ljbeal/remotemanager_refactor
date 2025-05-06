@@ -42,9 +42,9 @@ class TestOutdatedResult(BaseTestClass):
 
         ps.prepare(a=3)
 
-        with open(ps.runners[0].files.resultfile.local, 'w') as f:
+        with open(ps.runners[0].files.result.local, 'w') as f:
             json.dump("foo", f)
-        with open(ps.runners[0].files.resultfile.remote, 'w') as f:
+        with open(ps.runners[0].files.result.remote, 'w') as f:
             json.dump("foo", f)
         
         assert not ps.all_finished
