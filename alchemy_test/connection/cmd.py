@@ -11,8 +11,7 @@ from types import TracebackType
 from typing import IO, Dict, List, Tuple, Union, Any, Type, Optional
 
 from alchemy_test.utils.uuidmixin import UUIDMixin
-from alchemy_test.utils.verbosedecorator import make_verbose
-from alchemy_test.utils.verbosity import Verbosity
+from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +53,7 @@ def detect_locale_error(stderr: str) -> bool:
     return len(re.findall(match, stderr)) != 0
 
 
-@make_verbose
-class CMD(UUIDMixin):
+class CMD(UUIDMixin, VerboseMixin):
     """
     This class stores a command to be executed, and the returned stdout, stderr
 
@@ -341,8 +339,7 @@ class CMD(UUIDMixin):
             verbose = Verbosity(verbose)
         else:
             verbose = self.verbose
-        if not isinstance(verbose, Verbosity):
-            raise ValueError("verbose must be a Verbosity object")
+
         self._whoami = getpass.getuser()
         self._pwd = os.getcwd()
 
@@ -627,8 +624,6 @@ class CMD(UUIDMixin):
             verbose = Verbosity(verbose)
         else:
             verbose = self.verbose
-        if not isinstance(verbose, Verbosity):
-            raise ValueError("verbose must be a Verbose object")
 
         timeout = self.timeout
         self._timeout_current_tries += 1
@@ -726,8 +721,6 @@ class CMD(UUIDMixin):
             verbose = Verbosity(verbose)
         else:
             verbose = self.verbose
-        if not isinstance(verbose, Verbosity):
-            raise RuntimeError(f"Malformed Verbosity: {verbose}")
 
         if pid is None:
             pid = self.pid

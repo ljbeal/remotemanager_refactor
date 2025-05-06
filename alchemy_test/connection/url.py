@@ -16,15 +16,13 @@ from alchemy_test.utils.ensure_list import ensure_list
 from alchemy_test.utils.format_iterable import format_iterable
 from alchemy_test.utils.random_string import random_string
 from alchemy_test.utils.uuidmixin import UUIDMixin
-from alchemy_test.utils.verbosedecorator import make_verbose
-from alchemy_test.utils.verbosity import Verbosity
+from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
 
 
 LOCALHOST = "localhost"
 
 
-@make_verbose
-class URL(UUIDMixin):
+class URL(UUIDMixin, VerboseMixin):
     """
     Container to store the url info for a Remote run
 
@@ -104,8 +102,6 @@ class URL(UUIDMixin):
             verbose = Verbosity(verbose)
         else:
             verbose = self.verbose
-        if not isinstance(verbose, Verbosity):
-            raise RuntimeError(f"Malformed Verbosity: {verbose}")
 
         if host is None:
             if user is not None:
@@ -338,10 +334,6 @@ class URL(UUIDMixin):
     ) -> Union[rsync, scp]:
         if transport is None:
             transport = self._get_default_transport()
-        if not isinstance(transport, Transport):
-            raise ValueError(
-                f"{transport} is not a valid transport instance ({type(transport)})"
-            )
         return transport
 
     @transport.setter
@@ -511,8 +503,6 @@ class URL(UUIDMixin):
             verbose = Verbosity(verbose)
         else:
             verbose = self.verbose
-        if not isinstance(verbose, Verbosity):
-            raise RuntimeError(f"Malformed Verbosity: {verbose}")
 
         local_port = validate_port(local_port)
         remote_port = validate_port(remote_port)
@@ -572,8 +562,6 @@ class URL(UUIDMixin):
             verbose = Verbosity(verbose)
         else:
             verbose = self.verbose
-        if not isinstance(verbose, Verbosity):
-            raise RuntimeError(f"Malformed Verbosity: {verbose}")
 
         msg = f"pinging {self.host}"
         verbose.print(msg, level=2)

@@ -11,8 +11,7 @@ from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.ensure_list import ensure_list
 from alchemy_test.utils.ensure_dir import ensure_dir
 from alchemy_test.utils.flags import Flags
-from alchemy_test.utils.verbosedecorator import make_verbose
-from alchemy_test.utils.verbosity import Verbosity
+from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
 
 # TYPE_CHECKING is false at runtime, so does not cause a circular dependency
 if TYPE_CHECKING:
@@ -21,8 +20,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@make_verbose
-class Transport:
+class Transport(VerboseMixin):
     """
     Baseclass for file transfer
 
@@ -278,7 +276,7 @@ class Transport:
 
     @property
     def url(self) -> "URL":
-        if self._url is not None:
+        if self._url is not None:  # type: ignore
             return self._url
 
         from alchemy_test.connection.url import URL
@@ -321,7 +319,7 @@ class Transport:
     def flags(self, new: str):
         self._flags = Flags(str(new))
 
-    def cmd(self, primary: str, secondary: str) -> str:
+    def cmd(self, primary: str, secondary: str) -> CMD:
         """
         Returns a formatted command for issuing transfers. It is left to
         the developer to implement this method when adding more transport
@@ -389,8 +387,6 @@ class Transport:
             verbose = Verbosity(verbose)
         else:
             verbose = self.verbose
-        if not isinstance(verbose, Verbosity):
-            raise RuntimeError(f"Malformed Verbosity: {verbose}")
 
         logger.info("executing a transfer")
 

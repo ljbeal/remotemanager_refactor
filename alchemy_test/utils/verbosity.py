@@ -86,3 +86,18 @@ class Verbosity:
         # print(f'request {message[:24]} @ {atlevel}')
         if self and self.level >= level:
             print(message, end=end)
+
+
+
+class VerboseMixin:
+    __slots__ = ["_verbose"]
+
+    @property
+    def verbose(self) -> Verbosity:
+        """Verbose property"""
+        return self._verbose
+    
+    @verbose.setter
+    def verbose(self, value: Union[None, int, bool, Verbosity]) -> None:
+        """Verbosity setter"""
+        self._verbose = Verbosity(value)
