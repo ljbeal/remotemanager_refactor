@@ -22,7 +22,7 @@ class Flags:
             initial base flags to be used and modified if needed
     """
 
-    def __init__(self, initial_flags: Union[str, List[str]]):
+    def __init__(self, initial_flags: Union[str, List[str]] = ""):
         self._flags: Dict[str, List[str]] = {}
         if not isinstance(initial_flags, str):
             iflags = " ".join(initial_flags)
