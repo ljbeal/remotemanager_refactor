@@ -319,7 +319,7 @@ class Transport(VerboseMixin):
     def flags(self, new: str):
         self._flags = Flags(str(new))
 
-    def cmd(self, primary: str, secondary: str) -> CMD:
+    def cmd(self, primary: str, secondary: str) -> str:
         """
         Returns a formatted command for issuing transfers. It is left to
         the developer to implement this method when adding more transport
