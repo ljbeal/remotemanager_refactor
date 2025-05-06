@@ -36,7 +36,7 @@ class Transport(VerboseMixin):
 
     def __init__(
         self,
-        url: Union[URL, None],
+        url: Union["URL", None],
         dir_mode: bool = False,
         flags: Union[str, None] = None,
         verbose: Union[None, int, bool, "Verbosity"] = None,
@@ -283,10 +283,10 @@ class Transport(VerboseMixin):
         return URL()
 
     @url.setter
-    def url(self, url: URL):
+    def url(self, url: "URL"):
         self._url = url
 
-    def set_remote(self, url: Union[URL, None] = None):
+    def set_remote(self, url: Union["URL", None] = None):
         """
         set the remote address with a URL object
 
