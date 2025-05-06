@@ -393,8 +393,8 @@ class Transport(VerboseMixin):
         if dir_mode is None:
             dir_mode = self._dir_mode
 
-        commands = []
-        tmp_dirs = {}  # temporary directory storage if we're running dir_mode
+        commands: List[str] = []
+        tmp_dirs: Dict[str, bool] = {}  # temporary directory storage if we're running dir_mode
         for pair, files in self.transfers.items():
             primary, secondary = Transport.split_pair(pair)
 
