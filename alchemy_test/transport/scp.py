@@ -4,9 +4,14 @@ Handles file transfer via the `scp` protocol
 
 import logging
 import os
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from alchemy_test.transport.transport import Transport
 from alchemy_test.utils.ensure_list import ensure_list
+
+# TYPE_CHECKING is false at runtime, so does not cause a circular dependency
+if TYPE_CHECKING:
+    from alchemy_test.connection.url import URL
 
 
 logger = logging.getLogger(__name__)
@@ -21,17 +26,19 @@ class scp(Transport):
             url to extract remote address from
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, url: Union[URL, None], *args: List[Any], **kwargs: Dict[Any, Any]):
+        super().__init__(url=url, *args, **kwargs)
 
         # flags can be exposed, to utilise their flexibility
         flags = kwargs.pop("flags", "r")
+        if not isinstance(flags, str):
+            raise ValueError("flags must be a string")
         self.flags = flags
 
         self._transfers = {}
 
     @staticmethod
-    def _format_for_cmd(folder: str, inp: list) -> str:
+    def _format_for_cmd(folder: str, inp: List[str]) -> str:
         """
         Formats a list into a bash expandable command with brace expansion
 
@@ -45,7 +52,7 @@ class scp(Transport):
             formatted cmd
         """
 
-        def scp_join(files):
+        def scp_join(files: List[str]):
             if len(files) > 1:
                 return os.path.join(folder, "{" + ",".join(files) + "}")
             return os.path.join(folder, files[0])
@@ -62,7 +69,7 @@ class scp(Transport):
         remote, folder = folder.split(":")
         return f'{remote}:"{scp_join(inp)}"'
 
-    def cmd(self, primary, secondary):
+    def cmd(self, primary: str, secondary: str) -> str:
         password = ""
         if self.url.passfile is not None:
             password = f"{self.url.passfile} "
