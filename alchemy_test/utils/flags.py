@@ -1,7 +1,7 @@
 import re
 
 import logging
-from typing import Tuple
+from typing import Dict, List, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +22,21 @@ class Flags:
             initial base flags to be used and modified if needed
     """
 
-    def __init__(self, *initial_flags):
+    def __init__(self, initial_flags: Union[str, List[str]]):
+        self._flags: Dict[str, List[str]] = {}
         if not isinstance(initial_flags, str):
-            initial_flags = " ".join(initial_flags)
+            iflags = " ".join(initial_flags)
+        else:
+            iflags = initial_flags
 
-        logger.debug("creating Flags with initial flags %s", initial_flags)
+        logger.debug("creating Flags with initial flags %s", iflags)
 
-        self._flags = {}
-        self.flags = initial_flags
+        self.flags = iflags
 
     def __repr__(self):
         return self.flags
 
-    def _add(self, section):
+    def _add(self, section: str):
         raw, prefix = self.parse_string(section)
         if prefix == "-":
             self.ensure_prefix_exists(prefix)
@@ -45,17 +47,17 @@ class Flags:
 
         logger.debug("adding %s to flags. Flags are now %s", raw, self.flags)
 
-    def __add__(self, other):
+    def __add__(self, other: str):
         sections = other.split(" ")
         for section in sections:
             self._add(section)
 
-    def __iadd__(self, other):
+    def __iadd__(self, other: str):
         self.__add__(other)
         logger.debug("adding %s to flags inplace. Flags are now %s", other, self.flags)
         return self
 
-    def _sub(self, section):
+    def _sub(self, section: str):
         raw, prefix = self.parse_string(section)
         if prefix == "-":
             for char in raw:
@@ -71,26 +73,26 @@ class Flags:
 
         logger.debug("subtracting %s from flags. Flags are now %s", raw, self.flags)
 
-    def __sub__(self, other):
+    def __sub__(self, other: str):
         """Subtract unique flags in `other` once."""
         sections = other.split(" ")
         for section in sections:
             self._sub(section)
 
-    def __isub__(self, other):
+    def __isub__(self, other: str):
         self.__sub__(other)
         logger.debug(
             "subtracting %s from flags inplace. Flags are now %s", other, self.flags
         )
         return self
 
-    def ensure_prefix_exists(self, prefix):
+    def ensure_prefix_exists(self, prefix: str):
         """Ensures that the prefix exists in the internal storage, creating
         it if not"""
         if prefix not in self._flags:
             self._flags[prefix] = []
 
-    def parse_string(self, string) -> Tuple[str, str]:
+    def parse_string(self, string: str) -> Tuple[str, str]:
         """
         Takes a string, and strips away any non-alphanumeric chars.
         Returns True in secondary return if this is a verbose flag
@@ -113,13 +115,13 @@ class Flags:
         return raw, "-" * num
 
     @property
-    def flags(self):
+    def flags(self) -> str:
         """Returns the fully qualified flags as a string"""
         if sum([len(f) for f in self._flags.values()]) == 0:
             logger.info("sum of lens is 0, returning ''")
             return ""
         logger.info("creating string from internal flags %s", self._flags)
-        output = []
+        output: List[str] = []
         for prefix, flags in self._flags.items():
             if prefix == "-":
                 output.append("-" + "".join(flags))
@@ -131,7 +133,7 @@ class Flags:
         return string
 
     @flags.setter
-    def flags(self, inp):
+    def flags(self, inp: str):
         """Set the flags to the new input
 
         Arguments:
@@ -142,7 +144,7 @@ class Flags:
         self.__add__(inp)
 
 
-def strip_non_alphanumeric(string):
+def strip_non_alphanumeric(string: str) -> str:
     """
     remove any non-alphanumeric strings from input string
 
