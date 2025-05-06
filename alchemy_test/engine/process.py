@@ -143,7 +143,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
     def query_remote(self):
         cmd = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}", raise_errors=False)
 
-        if "No such file or directory" in cmd.stderr:
+        if cmd.stderr is not None and "No such file or directory" in cmd.stderr:
             return
 
         manifest = Manifest(content=cmd.stdout, uuid=self.short_uuid)
@@ -151,7 +151,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         for runner in self.runners:
             data = manifest.get(uuid=runner.short_uuid)
 
-            runner._remote_status = data
+            runner._remote_status = data  # type: ignore
 
     @property
     def is_finished(self):
