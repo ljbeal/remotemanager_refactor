@@ -26,7 +26,7 @@ class scp(Transport):
             url to extract remote address from
     """
 
-    def __init__(self, url: Union[URL, None], *args: Any, **kwargs: Any):
+    def __init__(self, url: Union["URL", None], *args: Any, **kwargs: Any):
         super().__init__(url=url, *args, **kwargs)
 
         # flags can be exposed, to utilise their flexibility

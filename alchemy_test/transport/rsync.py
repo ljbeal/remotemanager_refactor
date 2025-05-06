@@ -37,7 +37,7 @@ class rsync(Transport):
             request streaming of rsync --progress stdout
     """
 
-    def __init__(self, url: Union[URL, None], *args: Any, **kwargs: Any):
+    def __init__(self, url: Union["URL", None], *args: Any, **kwargs: Any):
         super().__init__(url=url, *args, **kwargs)
 
         self.check_version()

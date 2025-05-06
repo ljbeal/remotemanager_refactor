@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class cp(Transport):
 
-    def __init__(self, url: Union[URL, None], *args: Any, **kwargs: Any):
+    def __init__(self, url: Union["URL", None], *args: Any, **kwargs: Any):
         super().__init__(url=url, *args, **kwargs)
 
         logger.info("created new cp transport")
