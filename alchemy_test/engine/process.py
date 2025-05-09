@@ -80,7 +80,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
 
         self._files = ProcessFileHandler(
             master = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-master.sh"),
-            repo = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-process-repo.py"),
+            repo = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-repository.py"),
             manifest = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-manifest.txt"),
         )
 
