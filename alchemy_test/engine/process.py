@@ -22,20 +22,17 @@ class ProcessFileHandler(FileHandlerBaseClass):
     def __init__(
             self,
             master: TrackedFile,
-            data: TrackedFile,
             repo: TrackedFile,
             manifest: TrackedFile,
             ):
         super().__init__()
 
         self.master = master
-        self.data = data
         self.repo = repo
         self.manifest = manifest
 
         self._files = {
             "master": master,
-            "data": data,
             "repo": repo,
             "manifest": manifest
         }
@@ -83,8 +80,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
 
         self._files = ProcessFileHandler(
             master = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-master.sh"),
-            data = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-data.py"),
-            repo = TrackedFile(self.local_dir, self.remote_dir, "process-repo.py"),
+            repo = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-process-repo.py"),
             manifest = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-manifest.txt"),
         )
 

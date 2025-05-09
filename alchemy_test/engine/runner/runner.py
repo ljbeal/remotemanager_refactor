@@ -126,12 +126,23 @@ class Runner(UUIDMixin, ExecArgsMixin):
         # generate and add the per-runner lines
         self.parent.files.master.write(f"export sourcedir=$PWD\nrm -rf {self.parent.files.manifest.name}")
 
+        repo_prologue: List[str] = []
+        repo_epilogue: List[str] = []
         with open(repo.__file__, "r") as o:
-            self.parent.files.repo.write(o.read())
+            prologue = True
+            for line in o.readlines():
+                if '__name__ == "__main__":' in line:
+                    prologue = False
+                if prologue:
+                    repo_prologue.append(line)
+                else:
+                    repo_epilogue.append(line)
 
-        self.parent.files.data.write("### Main Function ###\n")
-        self.parent.files.data.append(self.parent.function.raw_source)
-        self.parent.files.data.append("\n### Runner Inputs ###\n")
+        repo_content: List[str] = [
+            "### Main Function ###\n",
+            self.parent.function.raw_source,
+            "\n\n### Runner Inputs ###\n"
+        ]
 
         for runner in self.parent.runners:
             self.parent.files.master.append(runner.runline)
@@ -139,7 +150,10 @@ class Runner(UUIDMixin, ExecArgsMixin):
             runner.files.jobscript.write(f"{runner.url.python} process-repo.py {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}")
 
             dumped_args = json.dumps(runner.call_args)
-            self.parent.files.data.append(f"runner_{runner.short_uuid}_input='{dumped_args}'\n")
+            repo_content.append(f"runner_{runner.short_uuid}_input='{dumped_args}'\n")
+        repo_content.append("\n\n")
+        
+        self.parent.files.repo.write("".join(repo_prologue + repo_content + repo_epilogue))
         
         return True
 
