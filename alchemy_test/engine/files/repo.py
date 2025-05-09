@@ -36,7 +36,7 @@ class Manifest:
                 content = f.read()
             return content
 
-        raise ValueError("Content read error, either manifest_path is missing or excplicit content is mangled")
+        raise ValueError("Content read error, either manifest_path is missing or content is mangled")
     
     def now(self) -> str:
         """
