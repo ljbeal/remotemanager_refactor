@@ -39,8 +39,8 @@ class BaseTestClass:
     
     def create_process(self, function: Callable[..., Any]) -> ProcessHandler:
         """Create a process handler"""
-
-        ps = ProcessHandler(function, name=random_string())
+        salt = random_string()
+        ps = ProcessHandler(function, name=salt, remote_dir=f"temp_remote_{salt}", local_dir=f"temp_local_{salt}")
         self.processes.append(ps)
         return ps
 
