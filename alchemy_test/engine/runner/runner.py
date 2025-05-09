@@ -124,7 +124,11 @@ class Runner(UUIDMixin, ExecArgsMixin):
             os.makedirs(self.local_dir)
         
         # generate and add the per-runner lines
-        self.parent.files.master.write(f"export sourcedir=$PWD\nrm -rf {self.parent.files.manifest.name}")
+        self.parent.files.master.write(f"""\
+export sourcedir=$PWD
+rm -rf {self.parent.files.manifest.name}\n
+{generate_format_fn(manifest_filename=self.parent.files.manifest.name)}
+""")
 
         repo_prologue: List[str] = []
         repo_epilogue: List[str] = []
@@ -150,7 +154,11 @@ class Runner(UUIDMixin, ExecArgsMixin):
         for runner in self.parent.runners:
             self.parent.files.master.append(runner.runline)
 
-            runner.files.jobscript.write(f"{runner.url.python} {self.parent.files.repo.name} {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}")
+            runner.files.jobscript.write(f"""\
+export r_uuid='{runner.short_uuid}'
+append_to_log <<< "submitted"
+{runner.url.python} {self.parent.files.repo.name} {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}
+""")
 
             dumped_args = json.dumps(runner.call_args)
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
@@ -204,3 +212,16 @@ class Runner(UUIDMixin, ExecArgsMixin):
         if self.files.result.exists_local:
             with open(self.files.result.local, "r") as o:
                 self._result = json.load(o)
+
+
+def generate_format_fn(manifest_filename: str) -> str:
+    
+        logwrite_fn = f"""\
+append_to_log() {{
+  while IFS= read -r line; do
+    echo "$(date -u +'{repo.date_format}') [$r_uuid] $line" >> "$sourcedir/{manifest_filename}"
+  done
+}}
+export -f append_to_log
+"""
+        return logwrite_fn
