@@ -110,8 +110,11 @@ class Controller:
         Submit a job
         """
         self.manifest.log("started")
-        fn = getattr(self.__module__, function_name)
-        call_args = runner_data.get(uuid, {})  # type: ignore
+        fn = getattr(sys.modules[__name__], function_name)
+        call_args = json.loads(runner_data.get(uuid, {}))  # type: ignore
+
+        print(f"executing function {fn}")
+        print(f"using call args {call_args}")
 
         try:
             result = fn(**call_args)
