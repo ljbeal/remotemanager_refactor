@@ -4,11 +4,8 @@ This repository is the master file that handles runtime on the remote machine.
 It should stand by itself and have minimal dependencies to maximise transferability.
 """
 from datetime import datetime
-import importlib
-import importlib.util
 import json
 import sys
-from types import ModuleType
 from typing import List, Union
 
 
@@ -108,31 +105,16 @@ class Controller:
         """
         return f"{self.process_name}-data.py"
 
-    def _import_data(self) -> ModuleType:
-        """
-        Import the data module
-        """
-        # import the data module
-        spec = importlib.util.spec_from_file_location("data", self.data_path)
-        if spec is None or spec.loader is None:
-            raise RuntimeError(f"Failed to load data module {self.data_path}")
-        data = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(data)
-
-        return data
-
-    def submit(self, function_name: str):
+    def submit(self, function_name: str, uuid: str):
         """
         Submit a job
         """
-        data = self._import_data()
-
         self.manifest.log("started")
-        call_args = json.loads(getattr(data, f"runner_{self.uuid}_input"))
-        function = getattr(data, function_name)
+        fn = getattr(self.__module__, function_name)
+        call_args = runner_data.get(uuid, {})  # type: ignore
 
         try:
-            result = function(**call_args)
+            result = fn(**call_args)
         except Exception as ex:
             self.manifest.log("failed")
             raise ex
@@ -147,6 +129,9 @@ class Controller:
             raise ex
 
 
+runner_data = {}  # placeholder runner_data. To be added in submission
+
+
 if __name__ == "__main__":
     try:
         uuid = sys.argv[1]
@@ -158,4 +143,4 @@ if __name__ == "__main__":
 
     c = Controller(uuid=uuid, runner_name=runner_name, process_name=process_name)
 
-    c.submit(function_name)
+    c.submit(function_name, uuid)

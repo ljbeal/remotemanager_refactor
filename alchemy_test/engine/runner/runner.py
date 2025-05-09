@@ -131,6 +131,8 @@ class Runner(UUIDMixin, ExecArgsMixin):
         with open(repo.__file__, "r") as o:
             prologue = True
             for line in o.readlines():
+                if "# placeholder" in line:
+                    continue
                 if '__name__ == "__main__":' in line:
                     prologue = False
                 if prologue:
@@ -144,14 +146,15 @@ class Runner(UUIDMixin, ExecArgsMixin):
             "\n\n### Runner Inputs ###\n"
         ]
 
+        runner_data = ["runner_data = {"]
         for runner in self.parent.runners:
             self.parent.files.master.append(runner.runline)
 
             runner.files.jobscript.write(f"{runner.url.python} {self.parent.files.repo.name} {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}")
 
             dumped_args = json.dumps(runner.call_args)
-            repo_content.append(f"runner_{runner.short_uuid}_input='{dumped_args}'\n")
-        repo_content.append("\n\n")
+            runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
+        repo_content.append("\n".join(runner_data) + "\n}\n\n")
         
         self.parent.files.repo.write("".join(repo_prologue + repo_content + repo_epilogue))
         
