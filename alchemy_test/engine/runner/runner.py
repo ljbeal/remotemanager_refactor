@@ -125,9 +125,9 @@ class Runner(UUIDMixin, ExecArgsMixin):
         
         # generate and add the per-runner lines
         self.parent.files.master.write(f"""\
+{generate_format_fn(manifest_filename=self.parent.files.manifest.name)}
 export sourcedir=$PWD
 rm -rf {self.parent.files.manifest.name}\n
-{generate_format_fn(manifest_filename=self.parent.files.manifest.name)}
 """)
 
         repo_prologue: List[str] = []
@@ -222,6 +222,6 @@ append_to_log() {{
     echo "$(date -u +'{repo.date_format}') [$r_uuid] $line" >> "$sourcedir/{manifest_filename}"
   done
 }}
-export -f append_to_log
-"""
+
+export -f append_to_log"""
         return logwrite_fn
