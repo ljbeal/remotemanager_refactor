@@ -96,7 +96,8 @@ class Controller:
         self.process_name = process_name
         self.runner_name = runner_name
 
-        self.manifest = Manifest(f"{self.process_name}-manifest.txt", uuid=self.uuid)
+        manifest_path = f"{self.process_name}-manifest.txt" if process_name is not None else None
+        self.manifest = Manifest(manifest_path, uuid=self.uuid)
     
     @property
     def data_path(self) -> str:
