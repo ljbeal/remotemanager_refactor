@@ -17,7 +17,7 @@ class ProcessFileHandler(FileHandlerBaseClass):
     Extends the filehandler to contain Process related files
     """
 
-    __slots__ = ["master", "data", "repo", "manifest"]
+    __slots__ = ["master", "repo", "manifest"]
 
     def __init__(
             self,
