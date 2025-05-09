@@ -147,7 +147,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         for runner in self.parent.runners:
             self.parent.files.master.append(runner.runline)
 
-            runner.files.jobscript.write(f"{runner.url.python} process-repo.py {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}")
+            runner.files.jobscript.write(f"{runner.url.python} {self.parent.files.repo.name} {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}")
 
             dumped_args = json.dumps(runner.call_args)
             repo_content.append(f"runner_{runner.short_uuid}_input='{dumped_args}'\n")
