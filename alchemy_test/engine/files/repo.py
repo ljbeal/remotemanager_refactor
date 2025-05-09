@@ -9,7 +9,7 @@ import sys
 from typing import List, Union
 
 
-date_format = "%Y-%m-%d %H:%M:%S %z"
+date_format = "%Y-%m-%d %H:%M:%S"
 
 
 class Manifest:
