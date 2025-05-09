@@ -39,7 +39,7 @@ class ProcessFileHandler(FileHandlerBaseClass):
 
     @property
     def files_to_send(self) -> List[TrackedFile]:
-        return [self.master, self.data, self.repo]
+        return [self.master, self.repo]
 
 
 class ProcessHandler(UUIDMixin, ExecArgsMixin):
