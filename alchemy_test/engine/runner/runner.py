@@ -219,8 +219,11 @@ def generate_format_fn(manifest_filename: str) -> str:
     
         logwrite_fn = f"""\
 append_to_log() {{
-  exec > >(while IFS= read -r line; do echo "$(date -u +'{repo.date_format}') [$r_uuid] $line" >> "$sourcedir/{manifest_filename}"; done)
-  exec 2>&1
+  local timestr="$(date -u +'{repo.date_format}')"
+  local file="$sourcedir/{manifest_filename}"
+
+  exec > >(while IFS= read -r line; do echo "$timestr [$r_uuid] $line" >> "$file"; done)
+  exec 2> >(while IFS= read -r line; do echo "$timestr [$r_uuid] [stderr] $line" >> "$file"; done)
 }}
 
 export -f append_to_log"""
