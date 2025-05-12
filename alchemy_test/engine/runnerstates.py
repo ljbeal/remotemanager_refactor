@@ -5,9 +5,10 @@ class RunnerState(Enum):
     CREATED = 0
     STAGED = 1
     TRANSFERRED = 2
-    RUNNING = 3
-    COMPLETED = 4
-    FAILED = 5
+    SUBMITTED = 3
+    RUNNING = 4
+    COMPLETED = 5
+    FAILED = 6
 
     def __lt__(self, other: "RunnerState"):
         return self.value < other.value
