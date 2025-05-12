@@ -49,7 +49,21 @@ class Manifest:
         Convert a time string to timestamp
         """
         return int(datetime.strptime(timestring, date_format).timestamp())
-    
+
+    def log(self, string: str, mode: str = "state"):
+        """
+        Log a state to the manifest
+        """
+        if self.manifest_path is None:
+            return  # can't log to a file if no manifest path is set
+        
+        if mode not in ["state", "stdout", "stderr"]:
+            raise ValueError("Invalid mode. Must be 'state', 'stdout', or 'stderr'")
+        
+        string = f"{self.now()} [{self.uuid}] [{mode}] {string.strip()}\n"
+        with open(self.manifest_path, "a+") as o:
+            o.write(string)
+
     @property
     def data(self) -> Dict[str, List[str]]:
         """
@@ -73,21 +87,7 @@ class Manifest:
                     log["stderr"].append(line.strip())
                 else:
                     log["state"].append(line.strip())
-        return log
-
-    def log(self, string: str, mode: str = "state"):
-        """
-        Log a state to the manifest
-        """
-        if self.manifest_path is None:
-            return  # can't log to a file if no manifest path is set
-        
-        if mode not in ["state", "stdout", "stderr"]:
-            raise ValueError("Invalid mode. Must be 'state', 'stdout', or 'stderr'")
-        
-        string = f"{self.now()} [{self.uuid}] [{mode}] {string.strip()}\n"
-        with open(self.manifest_path, "a+") as o:
-            o.write(string)      
+        return log  
 
 
 class Controller:
