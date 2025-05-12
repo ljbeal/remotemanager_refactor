@@ -156,7 +156,8 @@ rm -rf {self.parent.files.manifest.name}\n
 
             runner.files.jobscript.write(f"""\
 export r_uuid='{runner.short_uuid}'
-echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted" >> $sourcedir/{self.parent.files.manifest.name}
+append_to_log
+echo "[status] submitted"
 {runner.url.python} {self.parent.files.repo.name} {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}
 """)
 
