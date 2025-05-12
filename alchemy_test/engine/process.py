@@ -177,6 +177,8 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
             data = manifest.data
 
             runner._remote_status = data["state"]  # type: ignore
+            runner.stdout = manifest.stdout
+            runner.stderr = manifest.stderr
 
     @property
     def is_finished(self):

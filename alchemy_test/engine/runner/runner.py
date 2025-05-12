@@ -43,7 +43,17 @@ class RunnerFileHandler(FileHandlerBaseClass):
 
 class Runner(UUIDMixin, ExecArgsMixin):
 
-    __slots__ = ["_idx", "_parent", "_call_args", "_uuid", "_files", "_remote_status", "_result"]
+    __slots__ = [
+        "_idx",
+        "_parent",
+        "_call_args",
+        "_uuid",
+        "_files",
+        "_remote_status",
+        "_result",
+        "stdout",
+        "stderr",
+    ]
 
     def __init__(
             self,
@@ -66,6 +76,9 @@ class Runner(UUIDMixin, ExecArgsMixin):
         
         self._remote_status: List[str] = []
         self._result = None
+        
+        self.stdout: str = ""
+        self.stderr: str = ""
 
     def __repr__(self) -> str:
         return self.name
