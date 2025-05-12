@@ -157,7 +157,7 @@ rm -rf {self.parent.files.manifest.name}\n
             runner.files.jobscript.write(f"""\
 export r_uuid='{runner.short_uuid}'
 append_to_log
-echo "[status] submitted"
+echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted" >> "$sourcedir/{self.parent.files.manifest.name}"
 {runner.url.python} {self.parent.files.repo.name} {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}
 """)
 
@@ -219,10 +219,11 @@ def generate_format_fn(manifest_filename: str) -> str:
     
         logwrite_fn = f"""\
 append_to_log() {{
+
   local timestr="$(date -u +'{repo.date_format}')"
   local file="$sourcedir/{manifest_filename}"
 
-  exec > >(while IFS= read -r line; do echo "$timestr [$r_uuid] $line" >> "$file"; done)
+  exec > >(while IFS= read -r line; do echo "$timestr [$r_uuid] [stdout] $line" >> "$file"; done)
   exec 2> >(while IFS= read -r line; do echo "$timestr [$r_uuid] [stderr] $line" >> "$file"; done)
 }}
 
