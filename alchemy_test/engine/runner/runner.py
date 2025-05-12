@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandlerBaseClass
+from alchemy_test.engine.runnerstates import RunnerState
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
 
@@ -51,6 +52,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         "_files",
         "_remote_status",
         "_result",
+        "_state",
         "stdout",
         "stderr",
     ]
@@ -80,12 +82,24 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self.stdout: str = ""
         self.stderr: str = ""
 
+        self._state = RunnerState.CREATED
+
     def __repr__(self) -> str:
         return self.name
 
     @property
     def idx(self) -> int:
         return self._idx
+    
+    @property
+    def state(self) -> RunnerState:
+        return self._state
+    
+    @state.setter
+    def state(self, value: RunnerState):
+        if not isinstance(value, RunnerState):  # type: ignore
+            raise ValueError(f"Expected a RunnerState, got {value}")
+        self._state = value
 
     @property
     def parent(self) -> "ProcessHandler":
