@@ -50,7 +50,8 @@ class Manifest:
         """
         return int(datetime.strptime(timestring, date_format).timestamp())
     
-    def get(self, uuid: str) -> Dict[str, List[str]]:
+    @property
+    def data(self) -> Dict[str, List[str]]:
         """
         Retrieve all log entries for a given uuid
 
@@ -65,7 +66,7 @@ class Manifest:
         """
         log: Dict[str, List[str]] = {"state": [], "stdout": [], "stderr": []}
         for line in self.content.split("\n"):
-            if f"[{uuid}]" in line:
+            if f"[{self.uuid}]" in line:
                 if "stdout" in line:
                     log["stdout"].append(line.strip())
                 elif "stderr" in line:

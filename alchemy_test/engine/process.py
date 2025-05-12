@@ -172,12 +172,11 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         if cmd.stderr is not None and "No such file or directory" in cmd.stderr:
             return
 
-        manifest = Manifest(content=cmd.stdout, uuid=self.short_uuid)
-
         for runner in self.runners:
-            data = manifest.get(uuid=runner.short_uuid)["state"]
+            manifest = Manifest(content=cmd.stdout, uuid=runner.short_uuid)
+            data = manifest.data
 
-            runner._remote_status = data  # type: ignore
+            runner._remote_status = data["state"]  # type: ignore
 
     @property
     def is_finished(self):
