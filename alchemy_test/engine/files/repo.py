@@ -74,22 +74,19 @@ class Manifest:
                     log["state"].append(line.strip())
         return log
 
-    def log(self, string: str):
+    def log(self, string: str, mode: str = "state"):
         """
-        Log to the manifest
+        Log a state to the manifest
         """
         if self.manifest_path is None:
             return  # can't log to a file if no manifest path is set
         
-        string = f"{self.now()} [{self.uuid}] {string.strip()}\n"
+        if mode not in ["state", "stdout", "stderr"]:
+            raise ValueError("Invalid mode. Must be 'state', 'stdout', or 'stderr'")
+        
+        string = f"{self.now()} [{self.uuid}] [{mode}] {string.strip()}\n"
         with open(self.manifest_path, "a+") as o:
-            o.write(string)
-    
-    def state(self, state: str):
-        """
-        Log a status update
-        """
-        self.log(f"[status] {state}")        
+            o.write(string)      
 
 
 class Controller:
@@ -120,23 +117,23 @@ class Controller:
         """
         Submit a job
         """
-        self.manifest.state("started")
+        self.manifest.log("started")
         fn = getattr(sys.modules[__name__], function_name)
         call_args = json.loads(runner_data.get(uuid, {}))  # type: ignore
 
         try:
             result = fn(**call_args)
         except Exception as ex:
-            self.manifest.state("failed")
+            self.manifest.log("failed")
             raise ex
         else:
-            self.manifest.state("completed")
+            self.manifest.log("completed")
 
         try:
             with open(f"{self.runner_name}-result.json", "w+") as o:
                 json.dump(result, o)
         except Exception as ex:
-            self.manifest.state("serialisation error")
+            self.manifest.log("serialisation error")
             raise ex
 
 
