@@ -175,7 +175,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         manifest = Manifest(content=cmd.stdout, uuid=self.short_uuid)
 
         for runner in self.runners:
-            data = manifest.get(uuid=runner.short_uuid)
+            data = manifest.get(uuid=runner.short_uuid)["state"]
 
             runner._remote_status = data  # type: ignore
 

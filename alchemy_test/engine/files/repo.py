@@ -6,7 +6,7 @@ It should stand by itself and have minimal dependencies to maximise transferabil
 from datetime import datetime
 import json
 import sys
-from typing import List, Union
+from typing import Dict, List, Union
 
 
 date_format = "%Y-%m-%d %H:%M:%S"
@@ -50,7 +50,7 @@ class Manifest:
         """
         return int(datetime.strptime(timestring, date_format).timestamp())
     
-    def get(self, uuid: str) -> List[str]:
+    def get(self, uuid: str) -> Dict[str, List[str]]:
         """
         Retrieve all log entries for a given uuid
 
@@ -63,11 +63,15 @@ class Manifest:
         Returns:
             List[str]: list of log entries
         """
-
-        log: List[str] = []
+        log: Dict[str, List[str]] = {"state": [], "stdout": [], "stderr": []}
         for line in self.content.split("\n"):
             if f"[{uuid}]" in line:
-                log.append(line.strip())
+                if "stdout" in line:
+                    log["stdout"].append(line.strip())
+                elif "stderr" in line:
+                    log["stderr"].append(line.strip())
+                else:
+                    log["state"].append(line.strip())
         return log
 
     def log(self, string: str):
