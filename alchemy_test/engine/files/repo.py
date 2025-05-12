@@ -80,6 +80,12 @@ class Manifest:
         string = f"{self.now()} [{self.uuid}] {string.strip()}\n"
         with open(self.manifest_path, "a+") as o:
             o.write(string)
+    
+    def state(self, state: str):
+        """
+        Log a status update
+        """
+        self.log(f"[status] {state}")        
 
 
 class Controller:
@@ -110,26 +116,23 @@ class Controller:
         """
         Submit a job
         """
-        self.manifest.log("started")
+        self.manifest.state("started")
         fn = getattr(sys.modules[__name__], function_name)
         call_args = json.loads(runner_data.get(uuid, {}))  # type: ignore
-
-        print(f"executing function {fn}")
-        print(f"using call args {call_args}")
 
         try:
             result = fn(**call_args)
         except Exception as ex:
-            self.manifest.log("failed")
+            self.manifest.state("failed")
             raise ex
         else:
-            self.manifest.log("completed")
+            self.manifest.state("completed")
 
         try:
             with open(f"{self.runner_name}-result.json", "w+") as o:
                 json.dump(result, o)
         except Exception as ex:
-            self.manifest.log("serialisation error")
+            self.manifest.state("serialisation error")
             raise ex
 
 
