@@ -87,7 +87,24 @@ class Manifest:
                     log["stderr"].append(line.strip())
                 else:
                     log["state"].append(line.strip())
-        return log  
+        return log
+    
+    @property
+    def stdout(self) -> str:
+        data = self.data["stdout"]
+
+        cache: List[str] = []
+        for line in data:
+            cache.append(line.split("[stdout] ")[-1])
+        return "\n".join(cache)
+
+    @property
+    def stderr(self) -> str:
+        data = self.data["stderr"]
+        cache: List[str] = []
+        for line in data:
+            cache.append(line.split("[stderr] ")[-1])
+        return "\n".join(cache)
 
 
 class Controller:
