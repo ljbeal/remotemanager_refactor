@@ -43,6 +43,11 @@ class BaseTestClass:
         ps = ProcessHandler(function, name=salt, remote_dir=f"temp_remote_{salt}", local_dir=f"temp_local_{salt}")
         self.processes.append(ps)
         return ps
+    
+    @property
+    def ps(self) -> ProcessHandler:
+        """Return the last created process handler"""
+        return self.processes[-1]
 
 
 def try_remove(f: str):
