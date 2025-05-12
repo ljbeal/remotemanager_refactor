@@ -66,7 +66,7 @@ class Manifest:
 
         log: List[str] = []
         for line in self.content.split("\n"):
-            if uuid in line:
+            if f"[{uuid}]" in line:
                 log.append(line.strip())
         return log
 
