@@ -85,4 +85,4 @@ class TestCallStack(BaseTestClass):
         for i in range(nRun):
             self.ps.run()
 
-        self.check_run(nRun=nRun,expected=expected)
+        self.check_run(nRun=nRun, expected=expected)
