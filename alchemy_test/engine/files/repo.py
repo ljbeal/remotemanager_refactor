@@ -135,7 +135,7 @@ class Controller:
         """
         Submit a job
         """
-        self.manifest.log("started")
+        self.manifest.log("running")
         fn = getattr(sys.modules[__name__], function_name)
         call_args = json.loads(runner_data.get(uuid, {}))  # type: ignore
 
