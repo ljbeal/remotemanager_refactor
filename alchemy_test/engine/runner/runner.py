@@ -48,6 +48,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         "_idx",
         "_parent",
         "_call_args",
+        "_temp_exec_args",
         "_uuid",
         "_files",
         "_remote_status",
@@ -68,6 +69,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         self._parent = parent
         self._call_args = call_arguments
         self._exec_args = exec_arguments
+        self._temp_exec_args: Dict[Any, Any] = {}
 
         self._uuid = self.generate_uuid(self.call_args)
 
@@ -128,6 +130,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         """        
         global_args = self.parent.exec_args.copy()
         global_args.update(self._exec_args)
+        global_args.update(self._temp_exec_args)
         return global_args
     
     @property
