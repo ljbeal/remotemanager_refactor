@@ -289,11 +289,15 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         verbose.print(f"Running using {self} as the master", level=2)
         transferred = self.transfer(verbose=verbose, **exec_args)
 
+        asynchronous = False
         run = 0
         for runner in self.parent.runners:
             if not runner.exec_args.get("force", False):
                 if runner.state >= RunnerState.RUNNING:
                     continue
+                if runner.exec_args.get("asynchronous", True):
+                    asynchronous = True
+                else:
                 run += 1
 
         if run == 0 and not transferred:
@@ -301,7 +305,10 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         
         verbose.print(f"Running {run}/{len(self.parent.runners)} Runners", level=1)
 
-        self.parent.run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
+        self.parent.run_cmd = self.url.cmd(
+            f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}", 
+            asynchronous=asynchronous
+        )
 
         for runner in self.parent.runners:
             runner.state = RunnerState.RUNNING
