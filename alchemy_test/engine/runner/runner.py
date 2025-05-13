@@ -154,11 +154,11 @@ class Runner(UUIDMixin, ExecArgsMixin):
             os.makedirs(self.local_dir)
         
         # generate and add the per-runner lines
-        self.parent.files.master.write(f"""\
-{generate_format_fn(manifest_filename=self.parent.files.manifest.name)}
-export sourcedir=$PWD
-rm -rf {self.parent.files.manifest.name}\n
-""")
+        master_content = [
+            generate_format_fn(manifest_filename=self.parent.files.manifest.name),
+            "export sourcedir=$PWD",
+            "rm -rf {self.parent.files.manifest.name}\n",
+        ]
 
         repo_prologue: List[str] = []
         repo_epilogue: List[str] = []
@@ -182,7 +182,7 @@ rm -rf {self.parent.files.manifest.name}\n
 
         runner_data = ["runner_data = {"]
         for runner in self.parent.runners:
-            self.parent.files.master.append(runner.runline)
+            master_content.append(runner.runline)
 
             runner.files.jobscript.write(f"""\
 export r_uuid='{runner.short_uuid}'
@@ -195,6 +195,8 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
         repo_content.append("\n".join(runner_data) + "\n}\n\n")
         
+        # main file writing
+        self.parent.files.master.write("\n".join(master_content))
         self.parent.files.repo.write("".join(repo_prologue + repo_content + repo_epilogue))
         
         return True
