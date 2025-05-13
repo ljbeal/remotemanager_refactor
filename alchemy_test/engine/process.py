@@ -157,20 +157,20 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
 
         self.add_runner(call_args=call_args, exec_args=exec_args)
 
-    def stage(self) -> bool:
-        return self.runners[0].stage()
+    def stage(self, **exec_args: Dict[Any, Any]) -> bool:
+        return self.runners[0].stage(**exec_args)
     
-    def transfer(self) -> bool:
-        return self.runners[0].transfer()
+    def transfer(self, **exec_args: Dict[Any, Any]) -> bool:
+        return self.runners[0].transfer(**exec_args)
     
-    def run(self) -> bool:
+    def run(self, **exec_args: Dict[Any, Any]) -> bool:
         """
         Either runs a single runner with the given args, or runs all prepared runners
 
         Returns:
             bool: True if the process was executed, False otherwise (in a skip or no-runner situation)
         """
-        return self.runners[0].run()
+        return self.runners[0].run(**exec_args)
 
     def query_remote(self):
         cmd = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}", raise_errors=False)

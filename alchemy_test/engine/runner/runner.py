@@ -166,12 +166,13 @@ class Runner(UUIDMixin, ExecArgsMixin):
 
         return True
 
-    def stage(self) -> bool:
+    def stage(self, **exec_args: Dict[Any, Any]) -> bool:
         """
         Perform staging
 
         This Phase creates all necessary files and stages them within the local staging directory
         """
+        self._temp_exec_args = exec_args
         # ensure the local staging dir exists
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
@@ -227,14 +228,14 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
         
         return True
 
-    def transfer(self) -> bool:
+    def transfer(self, **exec_args: Dict[Any, Any]) -> bool:
         """
         Perform a transfer
 
         Transfers the content of the local staging dir to the remote directories as needed
         """
         print(f"Transferring {self}")
-        self.stage()
+        self.stage(**exec_args)
 
         for runner in self.parent.runners:
             for file in runner.files.files_to_send:
@@ -249,14 +250,14 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
 
         return True
 
-    def run(self) -> bool:
+    def run(self, **exec_args: Dict[Any, Any]) -> bool:
         """
         Performs the remote execution
 
         ssh into the remote and execute the calculations as specified
         """
         print(f"Running using {self} as the master")
-        self.transfer()
+        self.transfer(**exec_args)
 
         self.parent.run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
 
