@@ -176,14 +176,13 @@ class Runner(UUIDMixin, ExecArgsMixin):
         # ensure the local staging dir exists
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
-        
-        # generate and add the per-runner lines
+        # generate and add the per-runner lines to the master script
         master_content = [
             generate_format_fn(manifest_filename=self.parent.files.manifest.name),
             "export sourcedir=$PWD",
             "rm -rf {self.parent.files.manifest.name}\n",
         ]
-
+        # collect baseline repo content
         repo_prologue: List[str] = []
         repo_epilogue: List[str] = []
         with open(repo.__file__, "r") as o:
@@ -197,13 +196,13 @@ class Runner(UUIDMixin, ExecArgsMixin):
                     repo_prologue.append(line)
                 else:
                     repo_epilogue.append(line)
-
+        # begin generating unique repo content with the main function
         repo_content: List[str] = [
             "### Main Function ###\n",
             self.parent.function.raw_source,
             "\n\n### Runner Inputs ###\n"
         ]
-
+        # create a cache for the runner data
         runner_data = ["runner_data = {"]
         for runner in self.parent.runners:
             master_content.append(runner.runline)
