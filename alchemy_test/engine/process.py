@@ -60,8 +60,6 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
     A Process can be created by the process decorator, which will handle the wrapping for you.
     """
 
-    __slots__ = ["_function", "_runners", "_name", "_files", "_url", "run_cmd"]
-
     def __init__(
             self,
             function: Callable[..., Any],

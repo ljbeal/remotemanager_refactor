@@ -5,7 +5,8 @@ from alchemy_test.utils.format_iterable import format_iterable
 
 
 class UUIDMixin:
-    _uuid: str = NotImplemented
+    
+    _uuid = NotImplemented
 
     @property
     def uuid(self) -> str:

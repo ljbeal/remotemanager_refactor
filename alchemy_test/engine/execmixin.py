@@ -7,8 +7,8 @@ class ExecArgsMixin:
 
     Also makes common args available and provides defaults for them
     """
-
-    __slots__ = ["_exec_args"]
+    
+    _exec_args: Dict[Any, Any] = {}
 
     @property
     def exec_args(self) -> Dict[Any, Any]:

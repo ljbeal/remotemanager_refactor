@@ -20,8 +20,6 @@ class RunnerFileHandler(FileHandlerBaseClass):
     Extends the filehandler to contain Process related files
     """
 
-    __slots__ =["jobscript", "result"]
-
     def __init__(
             self,
             jobscript: TrackedFile,

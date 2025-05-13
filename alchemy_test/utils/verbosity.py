@@ -2,6 +2,7 @@
 
 from typing import Union
 
+_default_level = 1
 
 class Verbosity:
     """
@@ -18,12 +19,11 @@ class Verbosity:
             level above which to print
     """
 
-    _default_level = 1
     __slots__ = ["_level"]
 
     def __init__(self, level: Union[None, int, bool, "Verbosity"] = None):
         if level is None:
-            level = Verbosity._default_level
+            level = _default_level
         # see if the level passed is already a Verbose instance
         elif isinstance(level, Verbosity):
             level = level.value
@@ -89,7 +89,8 @@ class Verbosity:
 
 
 class VerboseMixin:
-    __slots__ = ["_verbose"]
+    
+    _verbose = Verbosity(1)
 
     @property
     def verbose(self) -> Verbosity:
