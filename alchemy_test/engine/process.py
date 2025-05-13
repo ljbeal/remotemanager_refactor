@@ -170,12 +170,13 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
         """
         Prepares the process with the given exec arguments and call arguments
         """
+        verbose = self.validate_verbose(args.get("verbose", None))
         
         call_args: Dict[Any, Any] = {}        
         for arg in self.function.orig_args:
             call_args[arg] = args.pop(arg, None)
 
-        print(f"created runner with exec args: {args}")
+        verbose.print(f"created runner with exec args: {args}", 3)
 
         self.add_runner(call_args=call_args, exec_args=args)
 
