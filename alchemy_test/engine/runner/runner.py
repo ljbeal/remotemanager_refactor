@@ -68,7 +68,6 @@ class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
         self._parent = parent
         self._call_args = call_arguments
         self._exec_args = exec_arguments
-        self._temp_exec_args: Dict[Any, Any] = {}
 
         self._uuid = self.generate_uuid(self.call_args)
 
