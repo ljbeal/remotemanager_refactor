@@ -181,10 +181,12 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
         self.add_runner(call_args=call_args, exec_args=args)
 
     def stage(self, verbose: Union[Verbosity, None] = None,  **exec_args: Any) -> bool:
-        return self.runners[0].stage(verbose=verbose, **exec_args)
+        self._temp_exec_args = exec_args
+        return self.runners[0].stage(verbose=verbose)
     
     def transfer(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
-        return self.runners[0].transfer(verbose=verbose, **exec_args)
+        self._temp_exec_args = exec_args
+        return self.runners[0].transfer(verbose=verbose)
     
     def run(self, verbose: Union[Verbosity, None] = None,  **exec_args: Any) -> bool:
         """
@@ -193,7 +195,8 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
         Returns:
             bool: True if the process was executed, False otherwise (in a skip or no-runner situation)
         """
-        return self.runners[0].run(verbose=verbose, **exec_args)
+        self._temp_exec_args = exec_args
+        return self.runners[0].run(verbose=verbose)
 
     def read_remote_manifest(self):
         cmd = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}", raise_errors=False)
