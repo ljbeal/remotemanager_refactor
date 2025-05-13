@@ -37,7 +37,7 @@ class Function(UUIDMixin):
             python function for serialisation
     """
 
-    __slots__ = ["_uuid", "_source", "_fname", "_signature", "_arglist"]
+    __slots__ = ["_uuid", "_source", "_fname", "_signature", "_arglist", "_orig_arglist"]
 
     def __init__(self, func: Union[Callable[..., Any], str], force_self: bool = False):
 
@@ -87,8 +87,9 @@ class Function(UUIDMixin):
                 tmp.append(line[indent:])
 
         source = "\n".join(tmp).strip()
-
-        self._signature = Function.prepare_signature(signature, is_self=is_self)
+    
+        self._orig_arglist: List[str] = []
+        self._signature = self.prepare_signature(signature, is_self=is_self)
         self._arglist: Union[List[str], None] = None
         self._fname: str = name
 
@@ -139,8 +140,7 @@ class Function(UUIDMixin):
 
         return "\n".join(definition)
 
-    @staticmethod
-    def prepare_signature(signature: Union[str, inspect.Signature], is_self: bool = False) -> str:
+    def prepare_signature(self, signature: Union[str, inspect.Signature], is_self: bool = False) -> str:
         """
         Inserts *args and **kwargs into any signature that does not already
         have it
@@ -177,6 +177,8 @@ class Function(UUIDMixin):
                 return_annotation = return_annotation.__name__
             else:
                 return_annotation = "None"
+
+        self._orig_arglist = args.copy()
 
         if return_annotation == "_empty":
             return_annotation = None
@@ -291,6 +293,17 @@ class Function(UUIDMixin):
         output += [args_name, kwargs_name]
         self._arglist = output  # cache the args
         return output
+
+    @property
+    def orig_args(self) -> List[str]:
+        """
+        Returns the arguments of the unmodified signature (prior to *arg, **kwarg injection)
+
+        Returns:
+            List[str]:
+                a list of strings representing the original arguments
+        """
+        return self._orig_arglist
 
     @property
     def object(self):
