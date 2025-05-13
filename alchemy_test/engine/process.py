@@ -189,7 +189,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
         """
         return self.runners[0].run(verbose=verbose, **exec_args)
 
-    def query_remote(self):
+    def read_remote_manifest(self):
         cmd = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}", raise_errors=False)
 
         if cmd.stderr is not None and "No such file or directory" in cmd.stderr:
@@ -211,7 +211,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
 
     @property
     def is_finished(self):
-        self.query_remote()
+        self.read_remote_manifest()
 
         return [r.is_finished for r in self.runners]
 
