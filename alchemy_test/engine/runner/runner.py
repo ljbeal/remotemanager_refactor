@@ -150,6 +150,22 @@ class Runner(UUIDMixin, ExecArgsMixin):
         """
         return f"{self.url.python} {self.parent.files.repo.name} {self.short_uuid} {self.parent.name} {self.name} {self.parent.function.name}"
 
+    def assess_run(self) -> bool:
+        """
+        Assess whether this runner should be run
+        """
+        # if force, always run
+        if self.exec_args.get("force", False):
+            return True
+        # skip=False should be equivalent to force=True
+        if not self.exec_args.get("skip", True):
+            return True
+        # already staged
+        if self.state >= RunnerState.STAGED:
+            return False
+
+        return True
+
     def stage(self) -> bool:
         """
         Perform staging
