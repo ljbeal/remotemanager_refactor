@@ -54,6 +54,16 @@ class BaseTestClass:
     def ps(self) -> ProcessHandler:
         """Return the last created process handler"""
         return self.processes[-1]
+    
+    def run_ps(self) -> List[Any]:
+        """Run the last created process handler"""
+        self.ps.run()
+
+        self.ps.wait(0.1, 2)
+
+        self.ps.fetch_results()
+
+        return self.ps.results
 
 
 def try_remove(f: str):
