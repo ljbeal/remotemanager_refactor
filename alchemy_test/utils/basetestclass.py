@@ -55,9 +55,9 @@ class BaseTestClass:
         """Return the last created process handler"""
         return self.processes[-1]
     
-    def run_ps(self) -> List[Any]:
+    def run_ps(self, **exec_args: Any) -> List[Any]:
         """Run the last created process handler"""
-        self.ps.run()
+        self.ps.run(**exec_args)
 
         self.ps.wait(0.1, 2)
 
