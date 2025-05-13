@@ -200,6 +200,9 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
 
             dumped_args = json.dumps(runner.call_args)
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
+
+            runner.state = RunnerState.STAGED
+
         repo_content.append("\n".join(runner_data) + "\n}\n\n")
         
         # main file writing
@@ -220,6 +223,8 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
         for runner in self.parent.runners:
             for file in runner.files.files_to_send:
                 runner.url.transport.queue_for_push(file)
+                
+                runner.state = RunnerState.TRANSFERRED
         
         for file in self.parent.files.files_to_send:
             self.url.transport.queue_for_push(file)
@@ -227,6 +232,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
         self.url.transport.transfer()
 
         return True
+
     def run(self) -> bool:
         """
         Performs the remote execution
@@ -237,6 +243,9 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
         self.transfer()
 
         self.parent.run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
+
+        for runner in self.parent.runners:
+            runner.state = RunnerState.RUNNING
 
         return True
 
