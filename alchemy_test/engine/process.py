@@ -12,7 +12,7 @@ from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
-from alchemy_test.utils.verbosity import VerboseMixin
+from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
 
 
 class ProcessFileHandler(FileHandlerBaseClass):
@@ -66,8 +66,11 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
             function: Callable[..., Any],
             name: Union[str, None] = None,
             url: Union[URL, None] = None,
+            verbose: Union[Verbosity, int, bool, None] = None,
             **exec_args: Any
         ) -> None:
+        self._verbose = self.validate_verbose(verbose)
+
         self._function = Function(function)
         self._uuid = self.function.uuid
 
@@ -165,20 +168,20 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
 
         self.add_runner(call_args=call_args, exec_args=exec_args)
 
-    def stage(self, **exec_args: Dict[Any, Any]) -> bool:
-        return self.runners[0].stage(**exec_args)
+    def stage(self, verbose: Union[Verbosity, None] = None,  **exec_args: Dict[Any, Any]) -> bool:
+        return self.runners[0].stage(verbose=verbose, **exec_args)
     
-    def transfer(self, **exec_args: Dict[Any, Any]) -> bool:
-        return self.runners[0].transfer(**exec_args)
+    def transfer(self, verbose: Union[Verbosity, None] = None, **exec_args: Dict[Any, Any]) -> bool:
+        return self.runners[0].transfer(verbose=verbose, **exec_args)
     
-    def run(self, **exec_args: Dict[Any, Any]) -> bool:
+    def run(self, verbose: Union[Verbosity, None] = None,  **exec_args: Dict[Any, Any]) -> bool:
         """
         Either runs a single runner with the given args, or runs all prepared runners
 
         Returns:
             bool: True if the process was executed, False otherwise (in a skip or no-runner situation)
         """
-        return self.runners[0].run(**exec_args)
+        return self.runners[0].run(verbose=verbose, **exec_args)
 
     def query_remote(self):
         cmd = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}", raise_errors=False)

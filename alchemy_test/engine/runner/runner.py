@@ -1,13 +1,13 @@
 import json
 import os
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandlerBaseClass
 from alchemy_test.engine.runnerstates import RunnerState
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
-from alchemy_test.utils.verbosity import VerboseMixin
+from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
 
 import alchemy_test.engine.files.repo as repo
 
@@ -149,11 +149,13 @@ class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
         """
         return f"{self.url.python} {self.parent.files.repo.name} {self.short_uuid} {self.parent.name} {self.name} {self.parent.function.name}"
 
-    def assess_run(self) -> bool:
+    def assess_run(self, verbose: Union[Verbosity, None] = None) -> bool:
         """
         Assess whether this runner should be run
         """
-        self.verbose.print(f"Assessing run for {self}. State={self.state}", level=2)
+        verbose = self.validate_verbose(verbose)
+
+        verbose.print(f"Assessing run for {self}. State={self.state}", level=2)
         # if force, always run
         if self.exec_args.get("force", False):
             return True
@@ -166,12 +168,14 @@ class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
 
         return True
 
-    def stage(self, **exec_args: Dict[Any, Any]) -> bool:
+    def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Dict[Any, Any]) -> bool:
         """
         Perform staging
 
         This Phase creates all necessary files and stages them within the local staging directory
         """
+        verbose = self.validate_verbose(verbose)
+
         self._temp_exec_args = exec_args
         # ensure the local staging dir exists
         if not os.path.exists(self.local_dir):
@@ -237,14 +241,16 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         
         return True
 
-    def transfer(self, **exec_args: Dict[Any, Any]) -> bool:
+    def transfer(self, verbose: Union[Verbosity, None] = None, **exec_args: Dict[Any, Any]) -> bool:
         """
         Perform a transfer
 
         Transfers the content of the local staging dir to the remote directories as needed
         """
-        print(f"Transferring {self}")
-        staged = self.stage(**exec_args)
+        verbose = self.validate_verbose(verbose)
+
+        verbose.print(f"Transferring {self}", level=1)
+        staged = self.stage(verbose=verbose, **exec_args)
 
         if not staged:
             return False
@@ -262,14 +268,16 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
         return True
 
-    def run(self, **exec_args: Dict[Any, Any]) -> bool:
+    def run(self, verbose: Union[Verbosity, None] = None, **exec_args: Dict[Any, Any]) -> bool:
         """
         Performs the remote execution
 
         ssh into the remote and execute the calculations as specified
         """
-        print(f"Running using {self} as the master")
-        transferred = self.transfer(**exec_args)
+        verbose = self.validate_verbose(verbose)
+
+        verbose.print(f"Running using {self} as the master", level=2)
+        transferred = self.transfer(verbose=verbose, **exec_args)
 
         if not transferred:
             return False
