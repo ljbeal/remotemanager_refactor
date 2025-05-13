@@ -333,7 +333,10 @@ class Function(UUIDMixin):
             func_object = getattr(module, f"{self.name}")
 
         finally:
-            os.remove(tmp_file)
+            try:
+                os.remove(tmp_file)
+            except FileNotFoundError:
+                pass
 
         return func_object
 
