@@ -249,17 +249,24 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         """
         verbose = self.validate_verbose(verbose)
 
-        verbose.print(f"Transferring {self}", level=1)
+        verbose.print("Transferring...", level=1)
         staged = self.stage(verbose=verbose, **exec_args)
 
-        if not staged:
-            return False
-
+        transferred = 0
         for runner in self.parent.runners:
+            if not runner.exec_args.get("force", False):
+                if runner.state >= RunnerState.TRANSFERRED:
+                    continue
+
             for file in runner.files.files_to_send:
                 runner.url.transport.queue_for_push(file)
                 
                 runner.state = RunnerState.TRANSFERRED
+            
+            transferred += 1
+
+        if transferred == 0 and not staged:
+            return False
         
         for file in self.parent.files.files_to_send:
             self.url.transport.queue_for_push(file)
@@ -279,7 +286,14 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         verbose.print(f"Running using {self} as the master", level=2)
         transferred = self.transfer(verbose=verbose, **exec_args)
 
-        if not transferred:
+        run = 0
+        for runner in self.parent.runners:
+            if not runner.exec_args.get("force", False):
+                if runner.state >= RunnerState.RUNNING:
+                    continue
+                run += 1
+
+        if run == 0 and not transferred:
             return False
 
         self.parent.run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
