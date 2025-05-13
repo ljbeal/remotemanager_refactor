@@ -205,6 +205,10 @@ class Runner(UUIDMixin, ExecArgsMixin):
         # create a cache for the runner data
         runner_data = ["runner_data = {"]
         for runner in self.parent.runners:
+            
+            if not runner.assess_run():
+                continue
+
             master_content.append(runner.runline)
 
             runner.files.jobscript.write(f"""\
