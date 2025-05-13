@@ -168,13 +168,13 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
 
         self.add_runner(call_args=call_args, exec_args=exec_args)
 
-    def stage(self, verbose: Union[Verbosity, None] = None,  **exec_args: Dict[Any, Any]) -> bool:
+    def stage(self, verbose: Union[Verbosity, None] = None,  **exec_args: Any) -> bool:
         return self.runners[0].stage(verbose=verbose, **exec_args)
     
-    def transfer(self, verbose: Union[Verbosity, None] = None, **exec_args: Dict[Any, Any]) -> bool:
+    def transfer(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         return self.runners[0].transfer(verbose=verbose, **exec_args)
     
-    def run(self, verbose: Union[Verbosity, None] = None,  **exec_args: Dict[Any, Any]) -> bool:
+    def run(self, verbose: Union[Verbosity, None] = None,  **exec_args: Any) -> bool:
         """
         Either runs a single runner with the given args, or runs all prepared runners
 

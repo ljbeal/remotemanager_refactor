@@ -168,7 +168,7 @@ class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
 
         return True
 
-    def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Dict[Any, Any]) -> bool:
+    def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         """
         Perform staging
 
@@ -241,7 +241,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         
         return True
 
-    def transfer(self, verbose: Union[Verbosity, None] = None, **exec_args: Dict[Any, Any]) -> bool:
+    def transfer(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         """
         Perform a transfer
 
@@ -268,7 +268,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
         return True
 
-    def run(self, verbose: Union[Verbosity, None] = None, **exec_args: Dict[Any, Any]) -> bool:
+    def run(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         """
         Performs the remote execution
 
