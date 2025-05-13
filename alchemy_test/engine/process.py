@@ -1,3 +1,4 @@
+from sys import orig_argv
 import time
 from typing import Any, Callable, Dict, List, Union
 import warnings
@@ -165,14 +166,18 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
             return True
         return False
     
-    def prepare(self, exec_args: Union[Dict[Any, Any], None] = None, **call_args: Any):
+    def prepare(self, **args: Any):
         """
         Prepares the process with the given exec arguments and call arguments
         """
-        if exec_args is None:
-            exec_args = {}
+        
+        call_args: Dict[Any, Any] = {}        
+        for arg in self.function.orig_args:
+            call_args[arg] = args.pop(arg, None)
 
-        self.add_runner(call_args=call_args, exec_args=exec_args)
+        print(f"created runner with exec args: {args}")
+
+        self.add_runner(call_args=call_args, exec_args=args)
 
     def stage(self, verbose: Union[Verbosity, None] = None,  **exec_args: Any) -> bool:
         return self.runners[0].stage(verbose=verbose, **exec_args)
