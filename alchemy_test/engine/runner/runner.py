@@ -210,7 +210,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
             runner.files.jobscript.write(f"""\
 export r_uuid='{runner.short_uuid}'
 enable_redirect
-echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted" >> "$sourcedir/{self.parent.files.manifest.name}"
+echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" >> "$sourcedir/{self.parent.files.manifest.name}"
 {runner.execline}
 """)
 
