@@ -70,7 +70,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         self._function = Function(function)
         self._uuid = self.function.uuid
 
-        self._exec_args = exec_args
+        self._exec_args: Dict[Any, Any] = exec_args
 
         if name is None:
             name = f"Process-{self.function.name}"
