@@ -208,7 +208,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
         
         return True
 
-    def transfer(self):
+    def transfer(self) -> bool:
         """
         Perform a transfer
 
@@ -226,7 +226,8 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
 
         self.url.transport.transfer()
 
-    def run(self):
+        return True
+    def run(self) -> bool:
         """
         Performs the remote execution
 
@@ -236,6 +237,8 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted"
         self.transfer()
 
         self.parent.run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
+
+        return True
 
     @property
     def is_finished(self) -> bool:
