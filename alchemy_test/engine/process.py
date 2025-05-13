@@ -214,6 +214,15 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
         return all(self.is_finished)
 
     def wait(self, interval: Union[int, float] = 1, timeout: int = 10) -> None:
+        has_run = False
+        for runner in self.runners:
+            if runner.state >= RunnerState.RUNNING:
+                has_run = True
+                break
+        
+        if not has_run:
+            return
+
         dt = 0
         while dt < timeout:
             dt += interval
