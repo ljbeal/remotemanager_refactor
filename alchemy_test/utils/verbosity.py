@@ -101,3 +101,9 @@ class VerboseMixin:
     def verbose(self, value: Union[None, int, bool, Verbosity]) -> None:
         """Verbosity setter"""
         self._verbose = Verbosity(value)
+    
+    def validate_verbose(self, verbose: Union[None, int, bool, Verbosity]) -> Verbosity:
+        """Allow for defaulting verbose"""
+        if verbose is None:
+            return self._verbose
+        return Verbosity(verbose)
