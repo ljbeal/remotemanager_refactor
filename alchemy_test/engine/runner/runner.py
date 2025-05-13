@@ -297,7 +297,6 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
                     continue
                 if runner.exec_args.get("asynchronous", True):
                     asynchronous = True
-                else:
                 run += 1
 
         if run == 0 and not transferred:
