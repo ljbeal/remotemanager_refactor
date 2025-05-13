@@ -9,10 +9,13 @@ class ExecArgsMixin:
     """
     
     _exec_args: Dict[Any, Any] = {}
+    _temp_exec_args: Dict[Any, Any] = {}
 
     @property
     def exec_args(self) -> Dict[Any, Any]:
-        return self._exec_args
+        cache = self._exec_args.copy()
+        cache.update(self._temp_exec_args)
+        return cache
     
     @property
     def local_dir(self) -> str:
