@@ -7,6 +7,7 @@ from alchemy_test.engine.files.filehandler import FileHandlerBaseClass
 from alchemy_test.engine.runnerstates import RunnerState
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
+from alchemy_test.utils.verbosity import VerboseMixin
 
 import alchemy_test.engine.files.repo as repo
 
@@ -40,7 +41,7 @@ class RunnerFileHandler(FileHandlerBaseClass):
         return [self.jobscript]
 
 
-class Runner(UUIDMixin, ExecArgsMixin):
+class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
 
     __slots__ = [
         "_idx",
@@ -152,6 +153,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
         """
         Assess whether this runner should be run
         """
+        self.verbose.print(f"Assessing run for {self}. State={self.state}", level=2)
         # if force, always run
         if self.exec_args.get("force", False):
             return True
@@ -200,6 +202,8 @@ class Runner(UUIDMixin, ExecArgsMixin):
             self.parent.function.raw_source,
             "\n\n### Runner Inputs ###\n"
         ]
+        # now deal with the runners themselves
+        proceed = False
         # create a cache for the runner data
         runner_data = ["runner_data = {"]
         for runner in self.parent.runners:
@@ -220,6 +224,10 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
 
             runner.state = RunnerState.STAGED
+            proceed = True
+        
+        if not proceed:
+            return False
 
         repo_content.append("\n".join(runner_data) + "\n}\n\n")
         
@@ -236,7 +244,10 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         Transfers the content of the local staging dir to the remote directories as needed
         """
         print(f"Transferring {self}")
-        self.stage(**exec_args)
+        staged = self.stage(**exec_args)
+
+        if not staged:
+            return False
 
         for runner in self.parent.runners:
             for file in runner.files.files_to_send:
@@ -258,7 +269,10 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         ssh into the remote and execute the calculations as specified
         """
         print(f"Running using {self} as the master")
-        self.transfer(**exec_args)
+        transferred = self.transfer(**exec_args)
+
+        if not transferred:
+            return False
 
         self.parent.run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
 

@@ -12,6 +12,7 @@ from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
+from alchemy_test.utils.verbosity import VerboseMixin
 
 
 class ProcessFileHandler(FileHandlerBaseClass):
@@ -44,7 +45,7 @@ class ProcessFileHandler(FileHandlerBaseClass):
         return [self.master, self.repo]
 
 
-class ProcessHandler(UUIDMixin, ExecArgsMixin):
+class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
     """
     Process is the main class used to tie Runners together
 
