@@ -178,7 +178,7 @@ class Function(UUIDMixin):
             else:
                 return_annotation = "None"
 
-        self._orig_arglist = args.copy()
+        self._orig_arglist = [a.split(":")[0].strip() for a in args]
 
         if return_annotation == "_empty":
             return_annotation = None
