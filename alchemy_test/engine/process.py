@@ -1,11 +1,13 @@
 import time
 from typing import Any, Callable, Dict, List, Union
+import warnings
 
 from alchemy_test.connection.cmd import CMD
 from alchemy_test.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import FileHandlerBaseClass
 from alchemy_test.engine.files.repo import Manifest
+from alchemy_test.engine.runnerstates import RunnerState
 from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
 from alchemy_test.storage.trackedfile import TrackedFile
@@ -180,9 +182,15 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
 
         for runner in self.runners:
             manifest = Manifest(content=cmd.stdout, uuid=runner.short_uuid)
-            data = manifest.data
 
-            runner._remote_status = data["state"]  # type: ignore
+            for state in manifest.state_list:
+                truestate = getattr(RunnerState, state.upper(), None)
+                if truestate is None:
+                    warnings.warn(f"Unknown state '{state.upper()}' for runner {runner.short_uuid}")
+                    continue
+
+                runner.state = truestate
+
             runner.stdout = manifest.stdout
             runner.stderr = manifest.stderr
 
