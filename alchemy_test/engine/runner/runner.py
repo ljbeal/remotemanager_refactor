@@ -267,10 +267,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
     @property
     def is_finished(self) -> bool:
-        for line in self._remote_status[::-1]:
-            if line.endswith("completed"):
-                return True
-        return False
+        return self.state >= RunnerState.COMPLETED
     
     @property
     def result(self) -> Any:
