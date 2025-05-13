@@ -74,7 +74,13 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
         self._function = Function(function)
         self._uuid = self.function.uuid
 
-        self._exec_args: Dict[Any, Any] = exec_args
+        self._exec_args: Dict[Any, Any] = {
+            "asynchronous": True,
+            "local_dir": "temp_local",
+            "remote_dir": "temp_remote",
+        }
+
+        self._exec_args.update(exec_args)
 
         if name is None:
             name = f"Process-{self.function.name}"
