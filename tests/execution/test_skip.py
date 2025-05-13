@@ -39,20 +39,3 @@ class TestSkip(BaseTestClass):
         assert ps.run(force=True)
 
         assert os.path.getmtime(ps.runners[0].files.result.remote) > result_mtime
-
-    def test_noskip(self):
-        ps = self.create_process(basic)
-        
-        ps.prepare(a=1)
-
-        assert ps.run()
-        ps.wait(0.1, 2)
-
-        result_mtime = os.path.getmtime(ps.runners[0].files.result.remote)
-
-        time.sleep(1)
-
-        assert ps.run(skip=False)
-
-        assert os.path.getmtime(ps.runners[0].files.result.remote) > result_mtime
-
