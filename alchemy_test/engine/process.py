@@ -138,6 +138,13 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin):
         """
         return list(self._runners.values())
     
+    @property
+    def states(self) -> List[RunnerState]:
+        """
+        Returns the list of states associated with this process
+        """
+        return [r.state for r in self.runners]
+    
     def add_runner(self, call_args: Dict[Any, Any], exec_args: Dict[Any, Any]) -> bool:
         """
         Adds a new runner to the process with the given arguments
