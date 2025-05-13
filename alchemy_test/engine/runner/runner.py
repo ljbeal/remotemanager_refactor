@@ -207,7 +207,7 @@ class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
             "\n\n### Runner Inputs ###\n"
         ]
         # now deal with the runners themselves
-        proceed = False
+        staged = 0
         # create a cache for the runner data
         runner_data = ["runner_data = {"]
         for runner in self.parent.runners:
@@ -228,10 +228,12 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
 
             runner.state = RunnerState.STAGED
-            proceed = True
+            staged += 1
         
-        if not proceed:
+        if staged == 0:
             return False
+        
+        verbose.print(f"Staged {staged}/{len(self.parent.runners)} Runners", level=1)
 
         repo_content.append("\n".join(runner_data) + "\n}\n\n")
         
@@ -249,7 +251,6 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         """
         verbose = self.validate_verbose(verbose)
 
-        verbose.print("Transferring...", level=1)
         staged = self.stage(verbose=verbose, **exec_args)
 
         transferred = 0
@@ -267,6 +268,8 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
         if transferred == 0 and not staged:
             return False
+        
+        verbose.print(f"Transferring for {transferred}/{len(self.parent.runners)} Runners", level=1)
         
         for file in self.parent.files.files_to_send:
             self.url.transport.queue_for_push(file)
@@ -295,6 +298,8 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
         if run == 0 and not transferred:
             return False
+        
+        verbose.print(f"Running {run}/{len(self.parent.runners)} Runners", level=1)
 
         self.parent.run_cmd = self.url.cmd(f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}")
 
