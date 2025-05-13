@@ -184,7 +184,7 @@ class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
         master_content = [
             generate_format_fn(manifest_filename=self.parent.files.manifest.name),
             "export sourcedir=$PWD",
-            "rm -rf {self.parent.files.manifest.name}\n",
+            f"rm -rf {self.parent.files.manifest.name}\n",
         ]
         # collect baseline repo content
         repo_prologue: List[str] = []
