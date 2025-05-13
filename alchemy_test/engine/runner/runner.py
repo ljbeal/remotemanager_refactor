@@ -43,20 +43,6 @@ class RunnerFileHandler(FileHandlerBaseClass):
 
 class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
 
-    __slots__ = [
-        "_idx",
-        "_parent",
-        "_call_args",
-        "_temp_exec_args",
-        "_uuid",
-        "_files",
-        "_remote_status",
-        "_result",
-        "_state",
-        "stdout",
-        "stderr",
-    ]
-
     def __init__(
             self,
             idx: int,
