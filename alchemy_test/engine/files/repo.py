@@ -90,6 +90,11 @@ class Manifest:
         return log
     
     @property
+    def state_list(self) -> List[str]:
+        data = self.data["state"]
+        return [line.split("[state]")[-1].strip() for line in data]
+    
+    @property
     def stdout(self) -> str:
         data = self.data["stdout"]
 
