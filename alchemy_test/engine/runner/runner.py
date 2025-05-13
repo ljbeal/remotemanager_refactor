@@ -142,6 +142,13 @@ class Runner(UUIDMixin, ExecArgsMixin):
         if self.exec_args.get("asynchronous", True):
             runline += " &"
         return runline
+    
+    @property
+    def execline(self) -> str:
+        """
+        Returns the string necessary to execute this runner
+        """
+        return f"{self.url.python} {self.parent.files.repo.name} {self.short_uuid} {self.parent.name} {self.name} {self.parent.function.name}"
 
     def stage(self) -> bool:
         """
@@ -188,7 +195,7 @@ class Runner(UUIDMixin, ExecArgsMixin):
 export r_uuid='{runner.short_uuid}'
 enable_redirect
 echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [status] submitted" >> "$sourcedir/{self.parent.files.manifest.name}"
-{runner.url.python} {self.parent.files.repo.name} {runner.short_uuid} {self.parent.name} {runner.name} {self.parent.function.name}
+{runner.execline}
 """)
 
             dumped_args = json.dumps(runner.call_args)
