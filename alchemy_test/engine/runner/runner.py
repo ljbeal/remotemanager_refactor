@@ -1,6 +1,6 @@
 import json
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass
