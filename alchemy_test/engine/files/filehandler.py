@@ -12,13 +12,16 @@ class FileHandlerBaseClass:
     Subclass from this and overrride the `_file` property
 
     _files should be a dictionary of endpoints and a boolean flag indicating that 
-    this file is important for excecution
+    this file is important for excecution. Files marked with `True` will be sent with 
+    `run()`, and files marked as `False` will be fetched with `fetch_results()`
+
+    Mark as None for files that should not be transferred
 
     For example:
     
     self._files = {
         "jobscript": True,
-        "result": False
+        "result": False,
     }
 
     self.jobscript = TrackedFile(...)
@@ -30,7 +33,7 @@ class FileHandlerBaseClass:
     __slots__ = ["_files", "extra_send", "extra_recv"]
     
     def __init__(self):        
-        self._files: Dict[str, bool] = {}
+        self._files: Dict[str, Union[None, bool]] = {}
         self.extra_send: List[TrackedFile] = []
         self.extra_recv: List[TrackedFile] = []
 
@@ -54,6 +57,13 @@ class FileHandlerBaseClass:
         Returns a list of all important files for job execution
         """  
         return [getattr(self, n) for n, k in self._files.items() if k] + self.extra_send
+
+    @property
+    def files_to_fetch(self) -> List[TrackedFile]:
+        """
+        Returns a list of all important files to collect after a run
+        """
+        return [getattr(self, n) for n, k in self._files.items() if (k is not None and not k)] + self.extra_recv
 
 
 class ExtraFilesMixin:
