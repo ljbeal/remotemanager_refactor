@@ -51,7 +51,7 @@ version = {attr = 'alchemy_test.__version__'}
 
 # coverage and testing
 [tool.pytest.ini_options]
-addopts = "--nbval --cov=alchemy_test --cov-report term-missing --cov-report xml:coverage.xml --cov-append"
+addopts = "--cov=alchemy_test --cov-report term-missing --cov-report xml:coverage.xml --cov-append"
 
 [tool.coverage.report]
 omit = ["remotemanager/connection/computers/*"]
