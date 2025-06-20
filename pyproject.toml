@@ -23,7 +23,7 @@ dynamic = ['version']
 keywords = []
 
 dependencies = [
-    'SQLAlchemy',
+    # 'SQLAlchemy',
 ]
 
 [project.urls]
