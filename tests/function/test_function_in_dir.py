@@ -1,4 +1,3 @@
-import os
 import subprocess
 
 from alchemy_test import get_package_root
