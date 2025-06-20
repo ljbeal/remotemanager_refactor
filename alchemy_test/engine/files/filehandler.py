@@ -27,7 +27,17 @@ class FileHandlerBaseClass:
     self.jobscript = TrackedFile(...)
     self.result = TrackedFile(...)
 
-    Note then that `jobscript` and `result` must also exist within the object
+    Note then that `jobscript` and `result` must also exist within the object. 
+    This can be done by adding them as an argument to the subclass init:
+
+    class ExampleFileHandler:
+        def __init__(self, jobscript, result):
+            super().__init__()
+
+            self._files = ...
+
+            self.result = result
+            self.jobscript = jobscript
     """
 
     __slots__ = ["_files", "extra_send", "extra_recv"]
