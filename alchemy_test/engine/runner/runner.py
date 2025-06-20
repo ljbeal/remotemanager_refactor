@@ -32,13 +32,9 @@ class RunnerFileHandler(FileHandlerBaseClass):
         self.result = result
 
         self._files = {
-            "jobscript": jobscript,
-            "result": result
+            "jobscript": True,
+            "result": False
         }
-
-    @property
-    def files_to_send(self) -> List[TrackedFile]:
-        return [self.jobscript]
 
 
 class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):

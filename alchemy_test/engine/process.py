@@ -35,14 +35,10 @@ class ProcessFileHandler(FileHandlerBaseClass):
         self.manifest = manifest
 
         self._files = {
-            "master": master,
-            "repo": repo,
-            "manifest": manifest
+            "master": True,
+            "repo": True,
+            "manifest": False,
         }
-
-    @property
-    def files_to_send(self) -> List[TrackedFile]:
-        return [self.master, self.repo]
 
 
 class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
