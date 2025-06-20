@@ -40,6 +40,10 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+/.coverage*
+/coverage.xml
+*log.yaml
+*.lcov
 
 # PEP 584
 __pycache__
