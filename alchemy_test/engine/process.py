@@ -1,11 +1,11 @@
 import time
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 import warnings
 
 from alchemy_test.connection.cmd import CMD
 from alchemy_test.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
-from alchemy_test.engine.files.filehandler import FileHandlerBaseClass
+from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from alchemy_test.engine.files.repo import Manifest
 from alchemy_test.engine.runnerstates import RunnerState
 from alchemy_test.storage.function import Function
@@ -41,7 +41,7 @@ class ProcessFileHandler(FileHandlerBaseClass):
         }
 
 
-class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
+class ProcessHandler(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
     """
     Process is the main class used to tie Runners together
 
@@ -63,6 +63,8 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
             name: Union[str, None] = None,
             url: Union[URL, None] = None,
             verbose: Union[Verbosity, int, bool, None] = None,
+            extra_files_send: Optional[List[Union[str, TrackedFile]]] = None,
+            extra_files_recv: Optional[List[Union[str, TrackedFile]]] = None,
             **exec_args: Any
         ) -> None:
         self._verbose = self.validate_verbose(verbose)
@@ -89,6 +91,13 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
             repo = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-repository.py"),
             manifest = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-manifest.txt"),
         )
+
+        if extra_files_send is not None:
+            for file in extra_files_send:
+                self.add_extra_send(file)
+        if extra_files_recv is not None:
+            for file in extra_files_recv:
+                self.add_extra_recv(file)
 
         self._url = url
 
@@ -166,7 +175,8 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, VerboseMixin):
         Prepares the process with the given exec arguments and call arguments
         """
         verbose = self.validate_verbose(args.get("verbose", None))
-        
+        # extract the "call args" from the original function arguments
+        # any remaining args go into the "exec_args"
         call_args: Dict[Any, Any] = {}        
         for arg in self.function.orig_args:
             call_args[arg] = args.pop(arg, None)

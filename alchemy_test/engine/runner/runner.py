@@ -1,9 +1,9 @@
 import json
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from alchemy_test.engine.execmixin import ExecArgsMixin
-from alchemy_test.engine.files.filehandler import FileHandlerBaseClass
+from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from alchemy_test.engine.runnerstates import RunnerState
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
@@ -37,32 +37,38 @@ class RunnerFileHandler(FileHandlerBaseClass):
         }
 
 
-class Runner(UUIDMixin, ExecArgsMixin, VerboseMixin):
+class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
 
     def __init__(
             self,
             idx: int,
             parent: "ProcessHandler",
             call_arguments: Dict[Any, Any], 
-            exec_arguments: Dict[Any, Any]
+            exec_arguments: Dict[Any, Any],
         ):
         self._idx = idx
         self._parent = parent
-        self._call_args = call_arguments
-        self._exec_args = exec_arguments
-
-        self._uuid = self.generate_uuid(self.call_args)
 
         self._files = RunnerFileHandler(
             jobscript = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-jobscript.sh"),
             result = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-result.json")
         )
+
+        for file in exec_arguments.pop("extra_files_send", []):
+            self.add_extra_send(file)
+        for file in exec_arguments.pop("extra_files_recv", []):
+            self.add_extra_recv(file)
         
         self._remote_status: List[str] = []
         self._result = None
         
         self.stdout: str = ""
         self.stderr: str = ""
+        
+        self._call_args = call_arguments
+        self._exec_args = exec_arguments
+
+        self._uuid = self.generate_uuid(self.call_args)
 
         self._state = RunnerState.CREATED
 
