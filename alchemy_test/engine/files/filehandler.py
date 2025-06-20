@@ -26,7 +26,7 @@ class FileHandlerBaseClass:
     Note then that `jobscript` and `result` must also exist within the object
     """
 
-    __slots__ = ["_files", "_execfiles"]
+    __slots__ = ["_files"]
     
     def __init__(self):        
         self._files: Dict[str, bool] = {}
