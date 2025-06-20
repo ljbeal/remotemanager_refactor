@@ -37,7 +37,7 @@ class ProcessFileHandler(FileHandlerBaseClass):
         self._files = {
             "master": True,
             "repo": True,
-            "manifest": False,
+            "manifest": None,
         }
 
 
@@ -269,7 +269,8 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
         fetched = False
         for runner in self.runners:
             if runner.is_finished:
-                self.url.transport.queue_for_pull(runner.files.result)
+                for file in runner.files.files_to_fetch:
+                    self.url.transport.queue_for_pull(file)
                 fetched = True
         
         self.url.transport.transfer()
