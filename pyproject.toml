@@ -26,6 +26,13 @@ dependencies = [
     # 'SQLAlchemy',
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+]
+
 [project.urls]
 Homepage = "https://gitlab.com/l_sim/remotemanager/"
 Documentation = "https://l_sim.gitlab.io/remotemanager/"
