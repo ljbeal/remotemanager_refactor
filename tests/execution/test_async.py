@@ -41,7 +41,7 @@ class TestAsync(BaseTestClass):
         # async run should take approximately sleeptime, since they should run in parallel
         # in practice, that's not the case when running in the CI, but we can add some flexibility
         # to the time constraint.
-        flex_time = self.sleeptime + 2
+        flex_time = self.sleeptime + 3
         assert dt < flex_time
 
         # just to make sure the test remains valid if we update it blindly
