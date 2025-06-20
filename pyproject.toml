@@ -31,6 +31,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-xdist",
+    "flake8",
 ]
 
 [project.urls]
