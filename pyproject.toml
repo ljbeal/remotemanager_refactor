@@ -40,6 +40,7 @@ Repository = "https://gitlab.com/l_sim/remotemanager/"
 Issues = "https://gitlab.com/l_sim/remotemanager/-/issues"
 Changelog = "https://l_sim.gitlab.io/remotemanager/versions.html"
 
+# build system
 [build-system]
 requires = ["setuptools>=61.0.0"]
 build-backend = "setuptools.build_meta"
