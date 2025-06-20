@@ -69,7 +69,7 @@ class FileHandlerBaseClass:
         return [getattr(self, n) for n, k in self._files.items() if k] + self.extra_send
 
     @property
-    def files_to_fetch(self) -> List[TrackedFile]:
+    def files_to_recv(self) -> List[TrackedFile]:
         """
         Returns a list of all important files to collect after a run
         """

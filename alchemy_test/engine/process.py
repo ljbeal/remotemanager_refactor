@@ -269,7 +269,7 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
         fetched = False
         for runner in self.runners:
             if runner.is_finished:
-                for file in runner.files.files_to_fetch:
+                for file in runner.files.files_to_recv:
                     self.url.transport.queue_for_pull(file)
                 fetched = True
         
