@@ -11,7 +11,7 @@ from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.ensure_list import ensure_list
 from alchemy_test.utils.ensure_dir import ensure_dir
 from alchemy_test.utils.flags import Flags
-from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
+from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
 
 # TYPE_CHECKING is false at runtime, so does not cause a circular dependency
 if TYPE_CHECKING:

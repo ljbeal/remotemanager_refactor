@@ -11,7 +11,7 @@ from types import TracebackType
 from typing import IO, Dict, List, Tuple, Union, Any, Type, Optional
 
 from alchemy_test.utils.uuidmixin import UUIDMixin
-from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
+from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
 
 logger = logging.getLogger(__name__)
 

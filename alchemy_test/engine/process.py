@@ -12,7 +12,7 @@ from alchemy_test.storage.function import Function
 from alchemy_test.engine.runner.runner import Runner
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
-from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
+from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
 
 
 class ProcessFileHandler(FileHandlerBaseClass):

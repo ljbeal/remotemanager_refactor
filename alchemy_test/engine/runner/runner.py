@@ -7,7 +7,7 @@ from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBa
 from alchemy_test.engine.runnerstates import RunnerState
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
-from alchemy_test.utils.verbosity import VerboseMixin, Verbosity
+from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
 
 import alchemy_test.engine.files.repo as repo
 
