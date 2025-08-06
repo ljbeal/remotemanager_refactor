@@ -3,13 +3,13 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import warnings
 
 from remotemanager.connection.cmd import CMD
-from alchemy_test.connection.url import URL
+from remotemanager.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from alchemy_test.engine.files.repo import Manifest
 from alchemy_test.engine.runnerstates import RunnerState
 from alchemy_test.storage.function import Function
-from alchemy_test.engine.runner.runner import Runner
+from alchemy_test.engine.runner import Runner
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.uuidmixin import UUIDMixin
 from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
