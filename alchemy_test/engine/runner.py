@@ -155,6 +155,18 @@ class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
 
         return True
 
+    def generate_jobscript(self, runner: "Runner") -> str:
+        script =  f"""\
+export r_uuid='{runner.short_uuid}'
+enable_redirect
+echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" >> "$sourcedir/{self.parent.files.manifest.name}"
+{runner.execline}
+"""
+        if runner.exec_args.get("avoid_nodes", False):
+            return script
+        
+        return self.url.script(**runner.exec_args)
+
     def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         """
         Perform staging
@@ -204,12 +216,7 @@ class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
 
             master_content.append(runner.runline)
 
-            runner.files.jobscript.write(f"""\
-export r_uuid='{runner.short_uuid}'
-enable_redirect
-echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" >> "$sourcedir/{self.parent.files.manifest.name}"
-{runner.execline}
-""")
+            runner.files.jobscript.write(self.generate_jobscript(runner))
 
             dumped_args = json.dumps(runner.call_args)
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
