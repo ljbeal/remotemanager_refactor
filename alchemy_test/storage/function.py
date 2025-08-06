@@ -5,7 +5,7 @@ import re
 from typing import Any, Callable, Dict, List, Union
 
 from alchemy_test.utils.tokenizer import Tokenizer
-from alchemy_test.utils.uuidmixin import UUIDMixin
+from remotemanager.utils.uuid import UUIDMixin
 
 
 _SCRIPT_TEMPLATE = """

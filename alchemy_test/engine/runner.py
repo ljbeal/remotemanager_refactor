@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from alchemy_test.engine.runnerstates import RunnerState
-from alchemy_test.storage.trackedfile import TrackedFile
-from alchemy_test.utils.uuidmixin import UUIDMixin
+from remotemanager.storage.trackedfile import TrackedFile
+from remotemanager.utils.uuid import UUIDMixin
 from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
 
 import alchemy_test.engine.files.repo as repo
@@ -68,7 +68,7 @@ class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
         self._call_args = call_arguments
         self._exec_args = exec_arguments
 
-        self._uuid = self.generate_uuid(self.call_args)
+        self.generate_uuid(self.call_args)
 
         self._state = RunnerState.CREATED
 
