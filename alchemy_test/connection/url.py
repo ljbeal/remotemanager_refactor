@@ -8,7 +8,7 @@ import time
 from collections import deque
 from typing import Any, Deque, Dict, List, Union, Tuple
 
-from alchemy_test.connection.cmd import CMD
+from remotemanager.connection.cmd import CMD
 from alchemy_test.transport.rsync import rsync
 from alchemy_test.transport.scp import scp
 from alchemy_test.utils.ensure_list import ensure_list

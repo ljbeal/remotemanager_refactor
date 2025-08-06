@@ -2,7 +2,7 @@ import time
 from typing import Any, Callable, Dict, List, Optional, Union
 import warnings
 
-from alchemy_test.connection.cmd import CMD
+from remotemanager.connection.cmd import CMD
 from alchemy_test.connection.url import URL
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass

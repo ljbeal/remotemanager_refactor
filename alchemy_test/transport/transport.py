@@ -6,7 +6,7 @@ import logging
 import os.path
 from typing import TYPE_CHECKING, Dict, List, Union
 
-from alchemy_test.connection.cmd import CMD
+from remotemanager.connection.cmd import CMD
 from alchemy_test.storage.trackedfile import TrackedFile
 from alchemy_test.utils.ensure_list import ensure_list
 from alchemy_test.utils.ensure_dir import ensure_dir
