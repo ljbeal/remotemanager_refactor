@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from alchemy_test.engine.execmixin import ExecArgsMixin
 from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from alchemy_test.engine.runnerstates import RunnerState
+from remotemanager import Computer
 from remotemanager.storage.trackedfile import TrackedFile
 from remotemanager.utils.uuid import UUIDMixin
 from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
@@ -165,7 +166,10 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         if runner.exec_args.get("avoid_nodes", False):
             return script
         
-        return self.url.script(**runner.exec_args)
+        if isinstance(self.url, Computer):
+            return self.url.script(**runner.exec_args)
+        
+        return script
 
     def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         """
