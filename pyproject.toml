@@ -32,6 +32,7 @@ dev = [
     "pytest-cov",
     "pytest-xdist",
     "ruff",
+    "remotemanager",
 ]
 
 [project.urls]
