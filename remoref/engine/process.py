@@ -170,20 +170,22 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
             return True
         return False
     
-    def prepare(self, **args: Any):
+    def prepare(self, *args: Any, **kwargs: Any):
         """
         Prepares the process with the given exec arguments and call arguments
         """
-        verbose = self.validate_verbose(args.get("verbose", None))
+        if len(args) != 0:
+            raise ValueError("Prepare must be called with keyword arguments")
+        verbose = self.validate_verbose(kwargs.get("verbose", None))
         # extract the "call args" from the original function arguments
         # any remaining args go into the "exec_args"
         call_args: Dict[Any, Any] = {}        
         for arg in self.function.orig_args:
-            call_args[arg] = args.pop(arg, None)
+            call_args[arg] = kwargs.pop(arg, None)
 
-        verbose.print(f"created runner with exec args: {args}", 3)
+        verbose.print(f"created runner with exec args: {kwargs}", 3)
 
-        self.add_runner(call_args=call_args, exec_args=args)
+        self.add_runner(call_args=call_args, exec_args=kwargs)
 
     def stage(self, verbose: Union[Verbosity, None] = None,  **exec_args: Any) -> bool:
         self._temp_exec_args = exec_args
