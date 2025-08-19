@@ -1,7 +1,7 @@
 import os
 import pytest
-from alchemy_test.engine.runnerstates import RunnerState
-from alchemy_test.utils.basetestclass import BaseTestClass
+from remoref.engine.runnerstates import RunnerState
+from remoref.utils.basetestclass import BaseTestClass
 
 
 def f(x):

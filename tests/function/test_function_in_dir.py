@@ -1,6 +1,6 @@
 import subprocess
 
-from alchemy_test import get_package_root
+from remoref import get_package_root
 
 
 def test_exec_fn_in_dir():

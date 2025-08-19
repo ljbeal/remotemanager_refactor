@@ -1,5 +1,5 @@
 import pytest
-from alchemy_test.utils.basetestclass import BaseTestClass
+from remoref.utils.basetestclass import BaseTestClass
 
 
 def read(ifile: str) -> str:

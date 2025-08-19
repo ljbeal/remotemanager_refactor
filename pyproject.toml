@@ -1,10 +1,10 @@
 [project]
-name = "alchemy_test"
+name = "remoref"
 authors = [
     {name = "Louis Beal", email = "louis.j.beal@gmail.com"}
 ]
 requires-python = ">=3.7"
-description = "remote run management tool"
+description = "remotemanager refactor sandbox"
 readme = "README.md"
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -48,11 +48,11 @@ requires = ["setuptools>=61.0.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
-version = {attr = 'alchemy_test.__version__'}
+version = {attr = 'remoref.__version__'}
 
 # coverage and testing
 [tool.pytest.ini_options]
-addopts = "--cov=alchemy_test --cov-report term-missing --cov-report xml:coverage.xml --cov-append"
+addopts = "--cov=remoref --cov-report term-missing --cov-report xml:coverage.xml --cov-append"
 
 [tool.coverage.report]
 omit = ["remotemanager/connection/computers/*"]
