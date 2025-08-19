@@ -1,5 +1,5 @@
 from alchemy_test.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass
-from alchemy_test.storage.trackedfile import TrackedFile
+from remotemanager.storage.trackedfile import TrackedFile
 
 
 class ProxyFileHandler(FileHandlerBaseClass):

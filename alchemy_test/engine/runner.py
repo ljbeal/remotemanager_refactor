@@ -8,7 +8,7 @@ from alchemy_test.engine.runnerstates import RunnerState
 from remotemanager import Computer
 from remotemanager.storage.trackedfile import TrackedFile
 from remotemanager.utils.uuid import UUIDMixin
-from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
+from remotemanager.utils.verbosity import VerboseMixin, Verbosity
 
 import alchemy_test.engine.files.repo as repo
 

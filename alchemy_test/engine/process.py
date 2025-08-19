@@ -12,7 +12,7 @@ from alchemy_test.engine.runner import Runner
 from remotemanager.storage.function import Function
 from remotemanager.storage.trackedfile import TrackedFile
 from remotemanager.utils.uuid import UUIDMixin
-from remotemanager.logging_utils.verbosity import VerboseMixin, Verbosity
+from remotemanager.utils.verbosity import VerboseMixin, Verbosity
 
 
 class ProcessFileHandler(FileHandlerBaseClass):

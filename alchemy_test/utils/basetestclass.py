@@ -4,7 +4,7 @@ from typing import Any, Callable, List
 import pytest
 
 from alchemy_test.engine.process import ProcessHandler
-from alchemy_test.utils.random_string import random_string
+from remotemanager.utils import random_string
 
 
 class BaseTestClass:

@@ -2,9 +2,10 @@ import os
 
 import pytest
 
-from alchemy_test.connection.cmd import CMD
-from alchemy_test.storage.function import Function
-from alchemy_test.utils.random_string import random_string
+
+from remotemanager.storage.function import Function
+from remotemanager.utils import random_string
+from remotemanager.connection.cmd import CMD
 
 
 def square(a: int) -> int:

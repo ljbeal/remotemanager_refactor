@@ -1,6 +1,6 @@
 import pytest
 
-from alchemy_test.storage.function import Function
+from remotemanager.storage.function import Function
 
 
 def test_basic():
