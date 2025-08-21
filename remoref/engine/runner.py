@@ -157,19 +157,20 @@ class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
         return True
 
     def generate_jobscript(self, runner: "Runner") -> str:
-        script =  f"""\
+        submit = f"""\
 export r_uuid='{runner.short_uuid}'
 enable_redirect
 echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" >> "$sourcedir/{self.parent.files.manifest.name}"
 {runner.execline}
 """
         if runner.exec_args.get("avoid_nodes", False):
-            return script
-        
+            return submit
+
         if isinstance(self.url, Computer):
-            return self.url.script(**runner.exec_args)
-        
-        return script
+            script = [self.url.script(**runner.exec_args), submit]
+            return "\n".join(script)
+
+        return submit
 
     def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         """
