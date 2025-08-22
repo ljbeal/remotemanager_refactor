@@ -63,9 +63,6 @@ class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
         self._remote_status: List[str] = []
         self._result = None
         
-        self.stdout: str = ""
-        self.stderr: str = ""
-        
         self._call_args = call_arguments
         self._exec_args = exec_arguments
 

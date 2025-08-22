@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 
 class ExecArgsMixin:
@@ -10,6 +10,8 @@ class ExecArgsMixin:
     
     _exec_args: Dict[Any, Any] = {}
     _temp_exec_args: Dict[Any, Any] = {}
+    _stdout = None
+    _stderr = None
 
     @property
     def exec_args(self) -> Dict[Any, Any]:
@@ -28,3 +30,19 @@ class ExecArgsMixin:
     @property
     def skip(self) -> bool:
         return self.exec_args.get("skip", True)
+    
+    @property
+    def stdout(self) -> Union[None, str]:
+        return self._stdout
+    
+    @stdout.setter
+    def stdout(self, stdout: str) -> None:
+        self._stdout = stdout
+
+    @property
+    def stderr(self) -> Union[None, str]:
+        return self._stderr
+    
+    @stderr.setter
+    def stderr(self, stderr: str) -> None:
+        self._stderr = stderr

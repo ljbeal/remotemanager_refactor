@@ -229,19 +229,20 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
         if cmd.stderr is not None and "No such file or directory" in cmd.stderr:
             return
 
-        for runner in self.runners:
-            manifest = Manifest(content=cmd.stdout, uuid=runner.short_uuid)
+        for item in self.runners + [self]:
+            manifest = Manifest(content=cmd.stdout, uuid=item.short_uuid)
 
-            for state in manifest.state_list:
-                truestate = getattr(RunnerState, state.upper(), None)
-                if truestate is None:
-                    warnings.warn(f"Unknown state '{state.upper()}' for runner {runner.short_uuid}")
-                    continue
+            if isinstance(item, Runner):
+                for state in manifest.state_list:
+                    truestate = getattr(RunnerState, state.upper(), None)
+                    if truestate is None:
+                        warnings.warn(f"Unknown state '{state.upper()}' for runner {item.short_uuid}")
+                        continue
 
-                runner.state = truestate
+                    item.state = truestate
 
-            runner.stdout = manifest.stdout
-            runner.stderr = manifest.stderr
+            item.stdout = manifest.stdout
+            item.stderr = manifest.stderr
 
     @property
     def is_finished(self):
