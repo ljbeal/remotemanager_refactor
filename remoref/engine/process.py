@@ -228,15 +228,16 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
     @property
     def is_finished(self):
         error = None
-        if self.run_cmd is not None:
+        if (
+            self.run_cmd is not None
+            and self.run_cmd.returncode is not None
+            and self.run_cmd.is_finished
+            and not self.run_cmd.succeeded
+        ):
             error = self.run_cmd.communicate(ignore_errors=True)["stderr"]
 
         if error is not None and error.strip() != "":
             raise RuntimeError(f"Encountered an error during submission:\n{error}")
-        
-        if self.run_cmd is not None and self.run_cmd.stderr is not None:
-            if self.run_cmd.stderr.strip() != "":
-                raise RuntimeError(f"Encountered an error during submission: {self.run_cmd.stderr}")
 
         self.read_remote_manifest()
 
