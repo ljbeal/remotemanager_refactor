@@ -188,6 +188,8 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         master_content = [
             generate_format_fn(manifest_filename=self.parent.files.manifest.name),
             "export sourcedir=$PWD",
+            f"export r_uuid={self.parent.short_uuid}",
+            "enable_redirect",
             f"rm -rf {self.parent.files.manifest.name}\n",
         ]
         # collect baseline repo content
@@ -339,5 +341,6 @@ enable_redirect() {{
   exec 2> >(while IFS= read -r line; do echo "$timestr [$r_uuid] [stderr] $line" >> "$file"; done)
 }}
 
-export -f enable_redirect"""
+export -f enable_redirect
+"""
         return logwrite_fn
