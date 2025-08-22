@@ -8,7 +8,6 @@ from remotemanager.utils import random_string
 
 
 class BaseTestClass:
-
     files: List[str] = []
     processes: List[ProcessHandler] = []
 
@@ -36,25 +35,27 @@ class BaseTestClass:
             try_remove(file)
 
         self.files = []
-    
-    def create_process(self, function: Callable[..., Any], **exec_args: Any) -> ProcessHandler:
+
+    def create_process(
+        self, function: Callable[..., Any], **exec_args: Any
+    ) -> ProcessHandler:
         """Create a process handler"""
         salt = random_string()
         ps = ProcessHandler(
-            function, 
-            name=salt, 
-            remote_dir=f"temp_remote_{salt}", 
-            local_dir=f"temp_local_{salt}", 
-            **exec_args
+            function,
+            name=salt,
+            remote_dir=f"temp_remote_{salt}",
+            local_dir=f"temp_local_{salt}",
+            **exec_args,
         )
         self.processes.append(ps)
         return ps
-    
+
     @property
     def ps(self) -> ProcessHandler:
         """Return the last created process handler"""
         return self.processes[-1]
-    
+
     def run_ps(self, **exec_args: Any) -> List[Any]:
         """Run the last created process handler"""
         self.ps.run(**exec_args)

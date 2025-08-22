@@ -3,6 +3,7 @@ This repository is the master file that handles runtime on the remote machine.
 
 It should stand by itself and have minimal dependencies to maximise transferability.
 """
+
 import datetime
 import json
 import sys
@@ -16,8 +17,13 @@ class Manifest:
     """
     Handler for manifest related activities
     """
-    def __init__(self, manifest_path: Union[str, None] = None, content: Union[str, None] = None, uuid: Union[str, None] = None):
 
+    def __init__(
+        self,
+        manifest_path: Union[str, None] = None,
+        content: Union[str, None] = None,
+        uuid: Union[str, None] = None,
+    ):
         if manifest_path is None and content is None:
             raise ValueError("Either manifest_path or content must be provided")
 
@@ -36,14 +42,16 @@ class Manifest:
                 content = f.read()
             return content
 
-        raise ValueError("Content read error, either manifest_path is missing or content is mangled")
-    
+        raise ValueError(
+            "Content read error, either manifest_path is missing or content is mangled"
+        )
+
     def dtnow(self) -> datetime.datetime:
         """
         Get the current UTC time in datetime format
         """
         return datetime.datetime.now(datetime.timezone.utc)
-    
+
     def now(self) -> str:
         """
         Get the current UTC time in the correct string format
@@ -62,10 +70,10 @@ class Manifest:
         """
         if self.manifest_path is None:
             return  # can't log to a file if no manifest path is set
-        
+
         if mode not in ["state", "stdout", "stderr"]:
             raise ValueError("Invalid mode. Must be 'state', 'stdout', or 'stderr'")
-        
+
         string = f"{self.now()} [{self.uuid}] [{mode}] {string.strip()}\n"
         with open(self.manifest_path, "a+") as o:
             o.write(string)
@@ -80,7 +88,7 @@ class Manifest:
                 uuid of the log entry to retrieve
             string (Union[str, None]):
                 Override the source material
-        
+
         Returns:
             List[str]: list of log entries
         """
@@ -94,12 +102,12 @@ class Manifest:
                 else:
                     log["state"].append(line.strip())
         return log
-    
+
     @property
     def state_list(self) -> List[str]:
         data = self.data["state"]
         return [line.split("[state]")[-1].strip() for line in data]
-    
+
     @property
     def stdout(self) -> str:
         data = self.data["stdout"]
@@ -122,8 +130,9 @@ class Controller:
     """
     Main runtime controller
     """
+
     def __init__(
-        self, 
+        self,
         uuid: str,
         runner_name: Union[str, None] = None,
         process_name: Union[str, None] = None,
@@ -132,9 +141,11 @@ class Controller:
         self.process_name = process_name
         self.runner_name = runner_name
 
-        manifest_path = f"{self.process_name}-manifest.txt" if process_name is not None else None
+        manifest_path = (
+            f"{self.process_name}-manifest.txt" if process_name is not None else None
+        )
         self.manifest = Manifest(manifest_path, uuid=self.uuid)
-    
+
     @property
     def data_path(self) -> str:
         """

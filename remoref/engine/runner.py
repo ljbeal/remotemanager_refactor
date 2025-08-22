@@ -23,46 +23,46 @@ class RunnerFileHandler(FileHandlerBaseClass):
     """
 
     def __init__(
-            self,
-            jobscript: TrackedFile,
-            result: TrackedFile,
-            ):
+        self,
+        jobscript: TrackedFile,
+        result: TrackedFile,
+    ):
         super().__init__()
 
         self.jobscript = jobscript
         self.result = result
 
-        self._files = {
-            "jobscript": True,
-            "result": False
-        }
+        self._files = {"jobscript": True, "result": False}
 
 
 class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
-
     def __init__(
-            self,
-            idx: int,
-            parent: "ProcessHandler",
-            call_arguments: Dict[Any, Any], 
-            exec_arguments: Dict[Any, Any],
-        ):
+        self,
+        idx: int,
+        parent: "ProcessHandler",
+        call_arguments: Dict[Any, Any],
+        exec_arguments: Dict[Any, Any],
+    ):
         self._idx = idx
         self._parent = parent
 
         self._files = RunnerFileHandler(
-            jobscript = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-jobscript.sh"),
-            result = TrackedFile(self.local_dir, self.remote_dir, f"{self.name}-result.json")
+            jobscript=TrackedFile(
+                self.local_dir, self.remote_dir, f"{self.name}-jobscript.sh"
+            ),
+            result=TrackedFile(
+                self.local_dir, self.remote_dir, f"{self.name}-result.json"
+            ),
         )
 
         for file in exec_arguments.pop("extra_files_send", []):
             self.add_extra_send(file)
         for file in exec_arguments.pop("extra_files_recv", []):
             self.add_extra_recv(file)
-        
+
         self._remote_status: List[str] = []
         self._result = None
-        
+
         self._call_args = call_arguments
         self._exec_args = exec_arguments
 
@@ -76,11 +76,11 @@ class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
     @property
     def idx(self) -> int:
         return self._idx
-    
+
     @property
     def state(self) -> RunnerState:
         return self._state
-    
+
     @state.setter
     def state(self, value: RunnerState):
         if not isinstance(value, RunnerState):  # type: ignore
@@ -90,43 +90,43 @@ class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
     @property
     def parent(self) -> "ProcessHandler":
         return self._parent
-    
+
     @property
     def url(self):
         return self.parent.url
-    
+
     @property
     def name(self) -> str:
         return f"{self.parent.name}-runner-{self.idx}"
-    
+
     @property
     def files(self) -> RunnerFileHandler:
         return self._files
-    
+
     @property
     def call_args(self) -> Dict[Any, Any]:
         return self._call_args
-    
+
     @property
     def exec_args(self) -> Dict[Any, Any]:
         """
         Generates the exec args by combining the parent's exec args with the runner's own exec args
-        """        
+        """
         global_args = self.parent.exec_args.copy()
         global_args.update(self._exec_args)
         global_args.update(self._temp_exec_args)
         return global_args
-    
+
     @property
     def runline(self) -> str:
         """
         Returns the string necessary to execute this runner
         """
-        runline =  f"{self.url.submitter} {self.files.jobscript.name}"
+        runline = f"submit_job_{self.url.submitter} {self.short_uuid} {self.files.jobscript.name}"
         if self.exec_args.get("asynchronous", True):
             runline += " &"
         return runline
-    
+
     @property
     def execline(self) -> str:
         """
@@ -183,11 +183,19 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
             os.makedirs(self.local_dir)
         # generate and add the per-runner lines to the master script
         master_content = [
+            "# Functions #",
             generate_format_fn(manifest_filename=self.parent.files.manifest.name),
+            generate_submit_fn(
+                manifest_filename=self.parent.files.manifest.name,
+                submitter=self.parent.url.submitter,
+            ),
+            "\n# Setup #",
+            "export -f enable_redirect",
             "export sourcedir=$PWD",
             f"export r_uuid={self.parent.short_uuid}",
             "enable_redirect",
             f"rm -rf {self.parent.files.manifest.name}\n",
+            "# Execution #",
         ]
         # collect baseline repo content
         repo_prologue: List[str] = []
@@ -207,14 +215,13 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         repo_content: List[str] = [
             "### Main Function ###\n",
             self.parent.function.raw_source,
-            "\n\n### Runner Inputs ###\n"
+            "\n\n### Runner Inputs ###\n",
         ]
         # now deal with the runners themselves
         staged = 0
         # create a cache for the runner data
         runner_data = ["runner_data = {"]
         for runner in self.parent.runners:
-            
             if not runner.assess_run():
                 continue
 
@@ -227,21 +234,25 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
             runner.state = RunnerState.STAGED
             staged += 1
-        
+
         if staged == 0:
             return False
-        
+
         verbose.print(f"Staged {staged}/{len(self.parent.runners)} Runners", level=1)
 
         repo_content.append("\n".join(runner_data) + "\n}\n\n")
-        
+
         # main file writing
         self.parent.files.master.write("\n".join(master_content))
-        self.parent.files.repo.write("".join(repo_prologue + repo_content + repo_epilogue))
-        
+        self.parent.files.repo.write(
+            "".join(repo_prologue + repo_content + repo_epilogue)
+        )
+
         return True
 
-    def transfer(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
+    def transfer(
+        self, verbose: Union[Verbosity, None] = None, **exec_args: Any
+    ) -> bool:
         """
         Perform a transfer
 
@@ -259,16 +270,19 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
             for file in runner.files.files_to_send:
                 runner.url.transport.queue_for_push(file)
-                
+
                 runner.state = RunnerState.TRANSFERRED
-            
+
             transferred += 1
 
         if transferred == 0 and not staged:
             return False
-        
-        verbose.print(f"Transferring for {transferred}/{len(self.parent.runners)} Runners", level=1)
-        
+
+        verbose.print(
+            f"Transferring for {transferred}/{len(self.parent.runners)} Runners",
+            level=1,
+        )
+
         for file in self.parent.files.files_to_send:
             self.url.transport.queue_for_push(file)
 
@@ -299,12 +313,12 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
         if run == 0 and not transferred:
             return False
-        
+
         verbose.print(f"Running {run}/{len(self.parent.runners)} Runners", level=1)
 
         self.parent.run_cmd = self.url.cmd(
-            f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}", 
-            asynchronous=asynchronous
+            f"cd {self.remote_dir} && {self.url.shell} {self.parent.files.master.name}",
+            asynchronous=asynchronous,
         )
 
         for runner in self.parent.runners:
@@ -315,11 +329,11 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
     @property
     def is_finished(self) -> bool:
         return self.state >= RunnerState.COMPLETED
-    
+
     @property
     def result(self) -> Any:
         return self._result
-    
+
     def read_local_files(self) -> None:
         if self.files.result.exists_local:
             with open(self.files.result.local, "r") as o:
@@ -327,8 +341,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
 
 
 def generate_format_fn(manifest_filename: str) -> str:
-    
-        logwrite_fn = f"""\
+    logwrite_fn = f"""\
 enable_redirect() {{
 
   local timestr="$(date -u +'{repo.date_format}')"
@@ -337,7 +350,69 @@ enable_redirect() {{
   exec > >(while IFS= read -r line; do echo "$timestr [$r_uuid] [stdout] $line" >> "$file"; done)
   exec 2> >(while IFS= read -r line; do echo "$timestr [$r_uuid] [stderr] $line" >> "$file"; done)
 }}
-
-export -f enable_redirect
 """
-        return logwrite_fn
+    return logwrite_fn
+
+
+def generate_submit_fn(
+    submitter: str,
+    manifest_filename: str,
+    script_run: bool = False,
+    add_docstring: bool = True,
+) -> str:
+    """
+    Generates a submission function for submitter
+
+    script_run should be used if the target function (or script) does not
+    log its output to the manifest (as is the case with None as the function)
+
+    $1 is the runner short_uuid
+    $2 is the path to the jobscript
+    $3 is the path to the error file
+    $4 is the path to the result file
+
+    Args:
+        submitter: submitter to generate for
+        manifest_filename: path to manifest file
+        script_run: handle completed and failed status updates in the function
+        add_docstring: adds docstring to function if True
+    """
+    template = f"""{{docstring}}
+submit_job_{{submitter_cmd}} () {{
+    local timestr="$(date -u +'{repo.date_format}')"
+    local file="$sourcedir/{manifest_filename}"
+
+    echo "$timestr [$1] [state] submitted" >> "$file"
+    {{submission_section}}
+}}"""
+
+    submission_normal = """{submitter} $2 ||
+    echo "$timestr [$1] [state] failed" >> "$file"
+"""
+    submission_script = """if {submitter} $2 ; then
+        echo "$timestr [$1] [state] completed" >> "$file"
+    else
+        echo "$timestr [$1] [state] failed" >> "$file"
+    fi"""
+
+    if script_run:
+        template = template.replace("{submission_section}", submission_script)
+    else:
+        template = template.replace("{submission_section}", submission_normal)
+    template = template.replace("{manifest_filename}", manifest_filename)
+    template = template.replace("{submitter}", submitter)
+
+    # strip any flags from the cmd
+    template = template.replace("{submitter_cmd}", submitter.split(" ", maxsplit=1)[0])
+
+    docstring = """# This function handles the running of jobs
+# Arguments:
+#   $1 is the runner short_uuid
+#   $2 is the path to the jobscript"""
+
+    if add_docstring:
+        template = template.replace("{docstring}", docstring)
+    else:
+        template = template.replace("{docstring}", "")
+
+    return template

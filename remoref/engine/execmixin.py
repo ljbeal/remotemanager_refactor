@@ -7,7 +7,7 @@ class ExecArgsMixin:
 
     Also makes common args available and provides defaults for them
     """
-    
+
     _exec_args: Dict[Any, Any] = {}
     _temp_exec_args: Dict[Any, Any] = {}
     _stdout = None
@@ -18,23 +18,23 @@ class ExecArgsMixin:
         cache = self._exec_args.copy()
         cache.update(self._temp_exec_args)
         return cache
-    
+
     @property
     def local_dir(self) -> str:
         return self.exec_args.get("local_dir", "temp_process_local")
-    
+
     @property
     def remote_dir(self) -> str:
         return self.exec_args.get("remote_dir", "temp_process_remote")
-    
+
     @property
     def skip(self) -> bool:
         return self.exec_args.get("skip", True)
-    
+
     @property
     def stdout(self) -> Union[None, str]:
         return self._stdout
-    
+
     @stdout.setter
     def stdout(self, stdout: str) -> None:
         self._stdout = stdout
@@ -42,7 +42,7 @@ class ExecArgsMixin:
     @property
     def stderr(self) -> Union[None, str]:
         return self._stderr
-    
+
     @stderr.setter
     def stderr(self, stderr: str) -> None:
         self._stderr = stderr
