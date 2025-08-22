@@ -59,3 +59,6 @@ __pycache__
 
 # databases
 *.db
+
+# default remotemanager log file
+remotemanager.log
