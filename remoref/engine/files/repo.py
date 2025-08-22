@@ -3,7 +3,7 @@ This repository is the master file that handles runtime on the remote machine.
 
 It should stand by itself and have minimal dependencies to maximise transferability.
 """
-from datetime import datetime
+import datetime
 import json
 import sys
 from typing import Dict, List, Union
@@ -38,17 +38,23 @@ class Manifest:
 
         raise ValueError("Content read error, either manifest_path is missing or content is mangled")
     
+    def dtnow(self) -> datetime.datetime:
+        """
+        Get the current UTC time in datetime format
+        """
+        return datetime.datetime.now(datetime.timezone.utc)
+    
     def now(self) -> str:
         """
-        Get the current time in the correct format
+        Get the current UTC time in the correct string format
         """
-        return datetime.strftime(datetime.now(), date_format)
+        return datetime.datetime.strftime(self.dtnow(), date_format)
 
     def to_timestamp(self, timestring: str) -> int:
         """
         Convert a time string to timestamp
         """
-        return int(datetime.strptime(timestring, date_format).timestamp())
+        return int(datetime.datetime.strptime(timestring, date_format).timestamp())
 
     def log(self, string: str, mode: str = "state"):
         """
