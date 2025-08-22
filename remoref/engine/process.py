@@ -204,6 +204,24 @@ class ProcessHandler(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
         """
         self._temp_exec_args = exec_args
         return self.runners[0].run(verbose=verbose)
+    
+    def run_direct(
+            self,
+            interval: int = 5,
+            timeout: int = 300,
+            verbose: Optional[Union[int, bool, Verbosity]] = None,
+            **runner_args: Dict[Any, Any]
+        ) -> List[Any]:
+        verbose = self.validate_verbose(verbose=verbose)
+
+        self.prepare(verbose=verbose, **runner_args)
+        self.run(verbose=verbose)
+
+        time.sleep(1)
+        self.wait(interval=interval, timeout=timeout)
+        self.fetch_results()
+
+        return self.results
 
     def read_remote_manifest(self):
         cmd = self.url.cmd(f"cd {self.remote_dir} && cat {self.files.manifest.name}", raise_errors=False)
