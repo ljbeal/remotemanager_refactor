@@ -18,7 +18,9 @@ valid_states = {
 class State:
     __slots__ = ["state", "value", "_ts"]
 
-    def __init__(self, state: str, timestamp: Optional[Union[int, float]] = None) -> None:
+    def __init__(
+        self, state: str, timestamp: Optional[Union[int, float]] = None
+    ) -> None:
         state = state.upper()
 
         if state not in valid_states:
@@ -34,7 +36,7 @@ class State:
 
     def __repr__(self) -> str:
         return f"State({self.state}, timestamp={self._ts})"
-    
+
     def __str__(self) -> str:
         return f"State {self.state} @ {self.time}"
 
@@ -57,15 +59,15 @@ class State:
 
     def __ne__(self, value: object) -> bool:
         return super().__ne__(value)
-    
+
     @property
     def failed(self) -> bool:
         return self.state == "FAILED"
-    
+
     @property
     def timestamp(self) -> int:
         return self._ts
-    
+
     @property
     def time(self) -> str:
         return datetime.datetime.fromtimestamp(self.timestamp).strftime(date_format)

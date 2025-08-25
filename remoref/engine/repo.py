@@ -7,7 +7,7 @@ It should stand by itself and have minimal dependencies to maximise transferabil
 import datetime
 import json
 import sys
-from typing import Dict, Iterable, Iterator, List, Tuple, Union
+from typing import Dict, Iterable, List, Tuple, Union
 
 
 date_format = "%Y-%m-%d %H:%M:%S"
@@ -130,11 +130,10 @@ class Manifest:
 
         output: List[str] = []
         for line in data:
-
             output.append(line.split("[state]")[-1].strip())
 
         return output
-    
+
     @property
     def states(self) -> Iterable[Tuple[int, str]]:
         data = self.data["state"]
@@ -142,7 +141,6 @@ class Manifest:
         times: List[int] = []
         states: List[str] = []
         for line in data:
-            
             ts, state = line.split("[state]")
             times.append(self.to_timestamp(ts.split("[")[0].strip()))
             states.append(state.strip().upper())

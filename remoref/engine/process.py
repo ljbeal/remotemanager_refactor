@@ -329,7 +329,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         for runner in self.runners:
             if not runner.is_finished:
                 continue
-                
+
             if not runner.state.failed:
                 for file in runner.files.files_to_recv:
                     self.url.transport.queue_for_pull(file)
