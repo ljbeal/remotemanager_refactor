@@ -13,6 +13,7 @@ from remotemanager.storage.function import Function
 from remotemanager.storage.trackedfile import TrackedFile
 from remotemanager.utils.uuid import UUIDMixin
 from remotemanager.utils.verbosity import VerboseMixin, Verbosity
+from remoref.engine.exceptions import RunnerFailedError, SubmissionError
 
 
 class ProcessFileHandler(FileHandlerBaseClass):
@@ -249,6 +250,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         )
 
         if cmd.stderr is not None and "No such file or directory" in cmd.stderr:
+            # no file yet
             return
 
         for item in self.runners + [self]:
@@ -263,6 +265,12 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
                     continue
 
                 item.state = truestate
+
+            if item.state.failed:
+                if isinstance(item, Runner):
+                    item._result = RunnerFailedError(manifest.stderr)  # type: ignore
+                else:
+                    raise SubmissionError(manifest.stderr)
 
             item.stdout = manifest.stdout
             item.stderr = manifest.stderr

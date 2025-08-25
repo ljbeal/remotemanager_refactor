@@ -27,3 +27,9 @@ class RunnerState(Enum):
 
     def __ne__(self, value: object) -> bool:
         return super().__ne__(value)
+
+    @property
+    def failed(self) -> bool:
+        if self.value == 6:
+            return True
+        return False
