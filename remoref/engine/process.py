@@ -4,9 +4,9 @@ import warnings
 
 from remotemanager.connection.cmd import CMD
 from remotemanager.connection.url import URL
-from remoref.engine.execmixin import ExecArgsMixin
-from remoref.engine.files.filehandler import ExtraFilesMixin, FileHandlerBaseClass
-from remoref.engine.files.repo import Manifest
+from remoref.engine.mixins.execmixin import ExecArgsMixin
+from remoref.engine.mixins.filehandler import ExtraFilesMixin, FileHandlerBaseClass
+from remoref.engine.repo import Manifest
 from remoref.engine.runnerstates import RunnerState
 from remoref.engine.runner import Runner
 from remotemanager.storage.function import Function
