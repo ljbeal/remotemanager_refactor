@@ -200,12 +200,18 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
 
     def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         self._temp_exec_args = exec_args
+
+        self.state = RunnerState.STAGED
+
         return self.runners[0].stage(verbose=verbose)
 
     def transfer(
         self, verbose: Union[Verbosity, None] = None, **exec_args: Any
     ) -> bool:
         self._temp_exec_args = exec_args
+
+        self.state = RunnerState.TRANSFERRED
+
         return self.runners[0].transfer(verbose=verbose)
 
     def run(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
@@ -248,22 +254,21 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         for item in self.runners + [self]:
             manifest = Manifest(content=cmd.stdout, uuid=item.short_uuid)
 
-            if isinstance(item, Runner):
-                for state in manifest.state_list:
-                    truestate = getattr(RunnerState, state.upper(), None)
-                    if truestate is None:
-                        warnings.warn(
-                            f"Unknown state '{state.upper()}' for runner {item.short_uuid}"
-                        )
-                        continue
+            for state in manifest.state_list:
+                truestate = getattr(RunnerState, state.upper(), None)
+                if truestate is None:
+                    warnings.warn(
+                        f"Unknown state '{state.upper()}' for runner {item.short_uuid}"
+                    )
+                    continue
 
-                    item.state = truestate
+                item.state = truestate
 
             item.stdout = manifest.stdout
             item.stderr = manifest.stderr
 
     @property
-    def is_finished(self):
+    def is_finished(self) -> List[bool]:
         error = None
         if (
             self.run_cmd is not None
@@ -278,7 +283,12 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
 
         self.read_remote_manifest()
 
-        return [r.is_finished for r in self.runners]
+        states = [r.is_finished for r in self.runners]
+
+        if all(states):
+            self.state = RunnerState.COMPLETED
+
+        return states
 
     @property
     def all_finished(self):
