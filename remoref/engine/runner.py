@@ -371,7 +371,6 @@ submit_job_{{submitter_cmd}} () {{
     local timestr="$(date -u +'{repo.date_format}')"
     local file="$sourcedir/{manifest_filename}"
 
-    echo "$timestr [$1] [state] submitted" >> "$file"
     {{submission_section}}
 }}"""
 
