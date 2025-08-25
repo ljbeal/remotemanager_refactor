@@ -182,7 +182,8 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
             "export sourcedir=$PWD",
             f"export r_uuid={self.parent.short_uuid}",
             "enable_redirect",
-            f"rm -rf {self.parent.files.manifest.name}\n",
+            f"rm -rf {self.parent.files.manifest.name}",
+            f'echo "{repo.generate_log_str(time=None, uuid=self.parent.short_uuid, string="submitted")}" > {self.parent.files.manifest.name}\n',
             "# Execution #",
         ]
         # collect baseline repo content
