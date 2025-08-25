@@ -325,7 +325,13 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         return self._result
 
     def read_local_files(self) -> None:
+        if not self.state >= State("COMPLETED"):
+            return
+
         if self.files.result.exists_local:
+            if self.files.result.local_mtime < self.state.timestamp:
+                return
+
             with open(self.files.result.local, "r") as o:
                 self._result = json.load(o)
 
