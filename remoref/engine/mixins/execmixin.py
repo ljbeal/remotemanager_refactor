@@ -1,6 +1,7 @@
+import time
 from typing import Any, Dict, Union
 
-from remoref.engine.runnerstates import RunnerState
+from remoref.engine.runnerstates import State
 
 
 class ExecMixin:
@@ -15,7 +16,7 @@ class ExecMixin:
     _stdout = None
     _stderr = None
 
-    _state = RunnerState.CREATED
+    _state = State("CREATED", time.time())
 
     @property
     def exec_args(self) -> Dict[Any, Any]:
@@ -52,11 +53,11 @@ class ExecMixin:
         self._stderr = stderr
 
     @property
-    def state(self) -> RunnerState:
+    def state(self) -> State:
         return self._state
 
     @state.setter
-    def state(self, value: RunnerState):
-        if not isinstance(value, RunnerState):  # type: ignore
+    def state(self, value: State):
+        if not isinstance(value, State):  # type: ignore
             raise ValueError(f"Expected a RunnerState, got {value}")
         self._state = value

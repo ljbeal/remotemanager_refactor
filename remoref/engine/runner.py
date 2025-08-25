@@ -1,10 +1,11 @@
 import json
 import os
+import time
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from remoref.engine.mixins.execmixin import ExecMixin
 from remoref.engine.mixins.filehandler import ExtraFilesMixin, FileHandlerBaseClass
-from remoref.engine.runnerstates import RunnerState
+from remoref.engine.runnerstates import State
 from remotemanager import Computer
 from remotemanager.storage.trackedfile import TrackedFile
 from remotemanager.utils.uuid import UUIDMixin
@@ -136,7 +137,7 @@ class Runner(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         if not self.exec_args.get("skip", True):
             return True
         # already staged
-        if self.state >= RunnerState.STAGED:
+        if self.state >= State("STAGED"):
             return False
 
         return True
@@ -221,7 +222,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
             dumped_args = json.dumps(runner.call_args)
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
 
-            runner.state = RunnerState.STAGED
+            runner.state = State("STAGED")
             staged += 1
 
         if staged == 0:
@@ -254,13 +255,13 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         transferred = 0
         for runner in self.parent.runners:
             if not runner.exec_args.get("force", False):
-                if runner.state >= RunnerState.TRANSFERRED:
+                if runner.state >= State("TRANSFERRED"):
                     continue
 
             for file in runner.files.files_to_send:
                 runner.url.transport.queue_for_push(file)
 
-                runner.state = RunnerState.TRANSFERRED
+                runner.state = State("TRANSFERRED", time.time())
 
             transferred += 1
 
@@ -294,7 +295,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         run = 0
         for runner in self.parent.runners:
             if not runner.exec_args.get("force", False):
-                if runner.state >= RunnerState.RUNNING:
+                if runner.state >= State("RUNNING"):
                     continue
                 if runner.exec_args.get("asynchronous", True):
                     asynchronous = True
@@ -311,13 +312,13 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" 
         )
 
         for runner in self.parent.runners:
-            runner.state = RunnerState.RUNNING
+            runner.state = State("RUNNING", time.time())
 
         return True
 
     @property
     def is_finished(self) -> bool:
-        return self.state >= RunnerState.COMPLETED
+        return self.state >= State("COMPLETED")
 
     @property
     def result(self) -> Any:

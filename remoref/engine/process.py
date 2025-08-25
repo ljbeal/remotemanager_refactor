@@ -7,7 +7,7 @@ from remotemanager.connection.url import URL
 from remoref.engine.mixins.execmixin import ExecMixin
 from remoref.engine.mixins.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from remoref.engine.repo import Manifest
-from remoref.engine.runnerstates import RunnerState
+from remoref.engine.runnerstates import State, valid_states
 from remoref.engine.runner import Runner
 from remotemanager.storage.function import Function
 from remotemanager.storage.trackedfile import TrackedFile
@@ -159,7 +159,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         return list(self._runners.values())
 
     @property
-    def states(self) -> List[RunnerState]:
+    def states(self) -> List[State]:
         """
         Returns the list of states associated with this process
         """
@@ -202,7 +202,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
     def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
         self._temp_exec_args = exec_args
 
-        self.state = RunnerState.STAGED
+        self.state = State("STAGED", time.time())
 
         return self.runners[0].stage(verbose=verbose)
 
@@ -211,7 +211,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
     ) -> bool:
         self._temp_exec_args = exec_args
 
-        self.state = RunnerState.TRANSFERRED
+        self.state = State("TRANSFERRED", time.time())
 
         return self.runners[0].transfer(verbose=verbose)
 
@@ -256,15 +256,14 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         for item in self.runners + [self]:
             manifest = Manifest(content=cmd.stdout, uuid=item.short_uuid)
 
-            for state in manifest.state_list:
-                truestate = getattr(RunnerState, state.upper(), None)
-                if truestate is None:
+            for ts, state in manifest.states:
+                if state not in valid_states:
                     warnings.warn(
-                        f"Unknown state '{state.upper()}' for runner {item.short_uuid}"
+                        f"Unknown state '{state}' for runner {item.short_uuid}"
                     )
                     continue
 
-                item.state = truestate
+                item.state = State(state, ts)
 
             if item.state.failed:
                 if isinstance(item, Runner):
@@ -296,7 +295,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         states = [r.is_finished for r in self.runners]
 
         if all(states):
-            self.state = RunnerState.COMPLETED
+            self.state = State("COMPLETED", time.time())
 
         return states
 
@@ -307,7 +306,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
     def wait(self, interval: Union[int, float] = 1, timeout: int = 10) -> None:
         has_run = False
         for runner in self.runners:
-            if runner.state >= RunnerState.RUNNING:
+            if runner.state >= State("RUNNING"):
                 has_run = True
                 break
 

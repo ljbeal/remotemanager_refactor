@@ -1,4 +1,4 @@
-from remoref.engine.runnerstates import RunnerState
+from remoref.engine.runnerstates import State
 from remoref.utils.basetestclass import BaseTestClass
 
 
@@ -13,19 +13,19 @@ class TestBasic(BaseTestClass):
         ps = self.create_process(basic)
         
         ps.prepare(a=1)
-        assert ps.runners[0].state == RunnerState.CREATED
+        assert ps.runners[0].state == State("CREATED")
 
         ps.stage()
-        assert ps.runners[0].state == RunnerState.STAGED
+        assert ps.runners[0].state == State("STAGED")
 
         ps.transfer()
-        assert ps.runners[0].state == RunnerState.TRANSFERRED
+        assert ps.runners[0].state == State("TRANSFERRED")
 
         ps.run()
-        assert ps.runners[0].state == RunnerState.RUNNING
+        assert ps.runners[0].state == State("RUNNING")
 
         ps.wait(0.1, 2)
-        assert ps.runners[0].state == RunnerState.COMPLETED
+        assert ps.runners[0].state == State("COMPLETED")
     
     def test_fail(self):
         ps = self.create_process(basic)
@@ -37,4 +37,4 @@ class TestBasic(BaseTestClass):
         except RuntimeError:
             pass
 
-        assert ps.runners[0].state == RunnerState.FAILED
+        assert ps.runners[0].state == State("FAILED")
