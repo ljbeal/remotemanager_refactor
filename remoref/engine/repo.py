@@ -79,7 +79,11 @@ class Manifest:
         """
         Convert a time string to timestamp
         """
-        return int(datetime.datetime.strptime(timestring, date_format).timestamp())
+        dt = datetime.datetime.strptime(timestring, date_format)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
+
+        return int(dt.timestamp())
 
     def log(self, string: str, mode: str = "state"):
         """
