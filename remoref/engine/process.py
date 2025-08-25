@@ -200,6 +200,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         self.add_runner(call_args=call_args, exec_args=kwargs)
 
     def stage(self, verbose: Union[Verbosity, None] = None, **exec_args: Any) -> bool:
+        time.sleep(1)
         self._temp_exec_args = exec_args
 
         self.state = State("STAGED", time.time())
