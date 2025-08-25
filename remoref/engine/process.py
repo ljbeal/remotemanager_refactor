@@ -279,7 +279,9 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
             error = self.run_cmd.communicate(ignore_errors=True)["stderr"]
 
         if error is not None and error.strip() != "":
-            raise RuntimeError(f"Encountered an error during submission:\n{error}")
+            raise RuntimeError(
+                f"Encountered an error during submission (hint: check that url.shell makes sense):\n{error}"
+            )
 
         self.read_remote_manifest()
 
