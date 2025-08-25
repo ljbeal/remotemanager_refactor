@@ -326,19 +326,23 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         raise RuntimeError("Wait Timed out")
 
     def fetch_results(self) -> bool:
-        fetched = False
+        transfer = False
         for runner in self.runners:
+            if not runner.is_finished:
+                continue
+                
             if not runner.state.failed:
                 for file in runner.files.files_to_recv:
                     self.url.transport.queue_for_pull(file)
-                fetched = True
+                transfer = True
 
-        self.url.transport.transfer()
+        if transfer:
+            self.url.transport.transfer()
 
         for runner in self.runners:
             runner.read_local_files()
 
-        return fetched
+        return transfer
 
     @property
     def results(self) -> List[Any]:
