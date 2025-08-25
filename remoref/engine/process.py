@@ -4,7 +4,7 @@ import warnings
 
 from remotemanager.connection.cmd import CMD
 from remotemanager.connection.url import URL
-from remoref.engine.mixins.execmixin import ExecArgsMixin
+from remoref.engine.mixins.execmixin import ExecMixin
 from remoref.engine.mixins.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from remoref.engine.repo import Manifest
 from remoref.engine.runnerstates import RunnerState
@@ -41,7 +41,7 @@ class ProcessFileHandler(FileHandlerBaseClass):
         }
 
 
-class ProcessHandler(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
+class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
     """
     Process is the main class used to tie Runners together
 

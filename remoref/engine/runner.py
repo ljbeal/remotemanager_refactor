@@ -2,7 +2,7 @@ import json
 import os
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-from remoref.engine.mixins.execmixin import ExecArgsMixin
+from remoref.engine.mixins.execmixin import ExecMixin
 from remoref.engine.mixins.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from remoref.engine.runnerstates import RunnerState
 from remotemanager import Computer
@@ -35,7 +35,7 @@ class RunnerFileHandler(FileHandlerBaseClass):
         self._files = {"jobscript": True, "result": False}
 
 
-class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
+class Runner(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
     def __init__(
         self,
         idx: int,
@@ -68,24 +68,12 @@ class Runner(UUIDMixin, ExecArgsMixin, ExtraFilesMixin, VerboseMixin):
 
         self.generate_uuid(self.call_args)
 
-        self._state = RunnerState.CREATED
-
     def __repr__(self) -> str:
         return self.name
 
     @property
     def idx(self) -> int:
         return self._idx
-
-    @property
-    def state(self) -> RunnerState:
-        return self._state
-
-    @state.setter
-    def state(self, value: RunnerState):
-        if not isinstance(value, RunnerState):  # type: ignore
-            raise ValueError(f"Expected a RunnerState, got {value}")
-        self._state = value
 
     @property
     def parent(self) -> "ProcessHandler":

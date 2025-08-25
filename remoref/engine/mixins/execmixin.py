@@ -1,7 +1,9 @@
 from typing import Any, Dict, Union
 
+from remoref.engine.runnerstates import RunnerState
 
-class ExecArgsMixin:
+
+class ExecMixin:
     """
     This mixin class handles execution args like directories and environment variables
 
@@ -12,6 +14,8 @@ class ExecArgsMixin:
     _temp_exec_args: Dict[Any, Any] = {}
     _stdout = None
     _stderr = None
+
+    _state = RunnerState.CREATED
 
     @property
     def exec_args(self) -> Dict[Any, Any]:
@@ -46,3 +50,13 @@ class ExecArgsMixin:
     @stderr.setter
     def stderr(self, stderr: str) -> None:
         self._stderr = stderr
+
+    @property
+    def state(self) -> RunnerState:
+        return self._state
+
+    @state.setter
+    def state(self, value: RunnerState):
+        if not isinstance(value, RunnerState):  # type: ignore
+            raise ValueError(f"Expected a RunnerState, got {value}")
+        self._state = value
