@@ -13,6 +13,23 @@ from typing import Dict, List, Union
 date_format = "%Y-%m-%d %H:%M:%S"
 
 
+def generate_log_str(
+    time: Union[None, str], uuid: str, string: str, mode: str = "state"
+) -> str:
+    """
+    Generate a bash+manifest compatible string. Either write directly or echo
+
+    if time is None, an "adaptive" `date` string will be used. 
+    Otherwise the time is added as-is
+    """
+    if time is not None:
+        timestr = time
+    else:
+        timestr = f"$(date -u +'{date_format}')"
+
+    return f"{timestr} [{uuid}] [{mode}] {string.strip()}"
+
+
 class Manifest:
     """
     Handler for manifest related activities
@@ -74,9 +91,13 @@ class Manifest:
         if mode not in ["state", "stdout", "stderr"]:
             raise ValueError("Invalid mode. Must be 'state', 'stdout', or 'stderr'")
 
-        string = f"{self.now()} [{self.uuid}] [{mode}] {string.strip()}\n"
         with open(self.manifest_path, "a+") as o:
-            o.write(string)
+            o.write(
+                generate_log_str(
+                    time=self.now(), uuid=self.uuid, string=string, mode=mode
+                )
+                + "\n"
+            )
 
     @property
     def data(self) -> Dict[str, List[str]]:
