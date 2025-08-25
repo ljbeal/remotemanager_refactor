@@ -19,7 +19,7 @@ def generate_log_str(
     """
     Generate a bash+manifest compatible string. Either write directly or echo
 
-    if time is None, an "adaptive" `date` string will be used. 
+    if time is None, an "adaptive" `date` string will be used.
     Otherwise the time is added as-is
     """
     if time is not None:
