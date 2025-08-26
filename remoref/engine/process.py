@@ -224,7 +224,17 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
             bool: True if the process was executed, False otherwise (in a skip or no-runner situation)
         """
         self._temp_exec_args = exec_args
-        return self.runners[0].run(verbose=verbose)
+
+        success = self.runners[0].run(verbose=verbose)
+        # a successful master execution should echo the short uuid of the Process
+        if success:
+            if self.run_cmd is None or self.short_uuid not in str(self.run_cmd.stdout):
+                if self.run_cmd is not None:
+                    raise SubmissionError(f"Submission failed\n{self.run_cmd.stderr}")
+                else:
+                    raise SubmissionError("Submission failed, with no run_cmd generated")
+
+        return success
 
     def run_direct(
         self,
