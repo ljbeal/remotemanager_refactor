@@ -106,12 +106,11 @@ class Runner(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         global_args.update(self._temp_exec_args)
         return global_args
 
-    @property
-    def runline(self) -> str:
+    def runline(self, jobscript_hash: str) -> str:
         """
         Returns the string necessary to execute this runner
         """
-        runline = f"submit_job_{self.url.submitter} {self.short_uuid} {self.files.jobscript.name}"
+        runline = f"submit_job_{self.url.submitter} {self.short_uuid} {self.files.jobscript.name} {jobscript_hash}"
         if self.exec_args.get("asynchronous", True):
             runline += " &"
         return runline
@@ -216,9 +215,9 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
             if not runner.assess_run():
                 continue
 
-            master_content.append(runner.runline)
-
             runner.files.jobscript.write(self.generate_jobscript(runner))
+
+            master_content.append(runner.runline(jobscript_hash=runner.files.jobscript.md5sum))
 
             dumped_args = json.dumps(runner.call_args)
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
@@ -378,6 +377,13 @@ def generate_submit_fn(
 submit_job_{{submitter_cmd}} () {{
     local timestr="$(date -u +'{repo.date_format}')"
     local file="$sourcedir/{manifest_filename}"
+    # compare the hash of the transferred file with generated
+    computed_hash=$(md5sum "$2" | awk '{{print $1}}')
+    if [[ $computed_hash != $3 ]]; then
+        echo >&2 "Mismatched hash for file: $2"
+        echo "$timestr [$1] [state] failed" >> "$file"
+        exit 1
+    fi
 
     echo "$timestr [$1] [state] submitted" >> "$file"
     {{submission_section}}
@@ -405,7 +411,8 @@ submit_job_{{submitter_cmd}} () {{
     docstring = """# This function handles the running of jobs
 # Arguments:
 #   $1 is the runner short_uuid
-#   $2 is the path to the jobscript"""
+#   $2 is the path to the jobscript
+#   $3 is the md5sum of the jobscript, for validation"""
 
     if add_docstring:
         template = template.replace("{docstring}", docstring)
