@@ -13,10 +13,10 @@ class ExecMixin:
 
     _exec_args: Dict[Any, Any] = {}
     _temp_exec_args: Dict[Any, Any] = {}
-    _stdout = None
-    _stderr = None
+    _stdout: Union[str, None] = None
+    _stderr: Union[str, None] = None
 
-    _state = State("CREATED", time.time())
+    _state: State = State("CREATED", time.time())
 
     @property
     def exec_args(self) -> Dict[Any, Any]:
