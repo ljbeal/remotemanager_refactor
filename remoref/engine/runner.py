@@ -251,7 +251,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
             f"""# initial file check #
 repo_hash=$(md5sum {self.parent.files.repo.name} | awk '{{print $1}}')
 if [[ $repo_hash != "{self.parent.files.repo.md5sum}" ]]; then
-    echo >&2 'Mismatched hash for repo'\n    exit 1\nfi\n""",
+    echo >&2 'Hash mismatch for repo (file may be corrupt)'\n    exit 1\nfi\n""",
         )
         self.parent.files.master.write("\n".join(master_prologue + master_content))
 
@@ -396,7 +396,7 @@ submit_job_{{submitter_cmd}} () {{
     # compare the hash of the transferred file with generated
     computed_hash=$(md5sum "$2" | awk '{{print $1}}')
     if [[ $computed_hash != "$3" ]]; then
-        echo "$timestr [$1] [stderr] Hash mismatch for jobscript" >> "$file"
+        echo "$timestr [$1] [stderr] Hash mismatch for jobscript (file may be corrupt)" >> "$file"
         echo "$timestr [$1] [state] failed" >> "$file"
         exit 1
     fi

@@ -59,7 +59,7 @@ class TestMalformedFiles(BaseTestClass):
         with open(ps.files.repo.remote, "w") as o:
             o.write("")
 
-        with pytest.raises(RuntimeError, match=r".*Mismatched hash.*"):
+        with pytest.raises(RuntimeError, match=r"Hash mismatch.*"):
             ps.run()
 
     def test_broken_jobscript(self):
