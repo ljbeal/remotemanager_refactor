@@ -374,8 +374,7 @@ def generate_submit_fn(
 
     $1 is the runner short_uuid
     $2 is the path to the jobscript
-    $3 is the path to the error file
-    $4 is the path to the result file
+    $3 is the md5 hash of the jobscript
 
     Args:
         submitter: submitter to generate for
