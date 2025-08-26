@@ -227,14 +227,15 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
 
         success = self.runners[0].run(verbose=verbose)
         # a successful master execution should echo the short uuid of the Process
-        if success:
-            if self.run_cmd is None or self.short_uuid not in str(self.run_cmd.stdout):
-                if self.run_cmd is not None:
-                    raise SubmissionError(f"Submission failed\n{self.run_cmd.stderr}")
-                else:
-                    raise SubmissionError(
-                        "Submission failed, with no run_cmd generated"
-                    )
+        if success and self.run_cmd is not None:
+            self.run_cmd.communicate(ignore_errors=True)
+
+            if self.short_uuid not in str(self.run_cmd.stdout):
+                msg = ["Encountered an error during submission:"]
+                if self.run_cmd.stderr is not None:
+                    msg.append(self.run_cmd.stderr)
+
+                raise SubmissionError("\n".join(msg))
 
         return success
 
@@ -289,20 +290,6 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
 
     @property
     def is_finished(self) -> List[bool]:
-        error = None
-        if (
-            self.run_cmd is not None
-            and self.run_cmd.returncode is not None
-            and self.run_cmd.is_finished
-            and not self.run_cmd.succeeded
-        ):
-            error = self.run_cmd.communicate(ignore_errors=True)["stderr"]
-
-        if error is not None and error.strip() != "":
-            raise RuntimeError(
-                f"Encountered an error during submission (hint: check that url.shell makes sense):\n{error}"
-            )
-
         self.read_remote_manifest()
 
         states = [r.is_finished for r in self.runners]

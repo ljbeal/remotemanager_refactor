@@ -13,7 +13,7 @@ class TestMalformedCommands(BaseTestClass):
         url = URL(shell="foo")
         ps = self.create_process(run, url=url)
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(SubmissionError):
             ps.run_direct(a=1)
 
     def test_broken_submitter(self):
@@ -59,7 +59,7 @@ class TestMalformedFiles(BaseTestClass):
         with open(ps.files.repo.remote, "w") as o:
             o.write("")
 
-        with pytest.raises(RuntimeError, match=r"Hash mismatch.*"):
+        with pytest.raises(SubmissionError, match=r".*Hash mismatch.*"):
             ps.run()
 
     def test_broken_jobscript(self):
