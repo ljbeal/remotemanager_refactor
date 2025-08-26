@@ -230,12 +230,15 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         if success and self.run_cmd is not None:
             self.run_cmd.communicate(ignore_errors=True)
 
-            if self.short_uuid not in str(self.run_cmd.stdout):
-                msg = ["Encountered an error during submission:"]
-                if self.run_cmd.stderr is not None:
-                    msg.append(self.run_cmd.stderr)
+            if self.run_cmd.stderr is not None and self.run_cmd.stderr != "":
+                raise SubmissionError(
+                    f"Encountered an error during submission:\n{self.run_cmd.stderr}"
+                )
 
-                raise SubmissionError("\n".join(msg))
+            elif self.short_uuid not in str(self.run_cmd.stdout):
+                raise SubmissionError(
+                    "Master script did not return the correct signal. File may be corrupt."
+                )
 
         return success
 
