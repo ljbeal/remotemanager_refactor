@@ -74,5 +74,7 @@ class TestMalformedFiles(BaseTestClass):
 
         self.run_ps()
         assert isinstance(ps.results[0], RunnerFailedError)
+        assert "Hash mismatch" in str(ps.results[0])
+
         # if only one file is broken, it should not spoil other runs
         assert ps.results[1] == 2

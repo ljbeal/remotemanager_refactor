@@ -396,7 +396,7 @@ submit_job_{{submitter_cmd}} () {{
     # compare the hash of the transferred file with generated
     computed_hash=$(md5sum "$2" | awk '{{print $1}}')
     if [[ $computed_hash != "$3" ]]; then
-        echo >&2 "Mismatched hash for file: $2"
+        echo "$timestr [$1] [stderr] Hash mismatch for jobscript" >> "$file"
         echo "$timestr [$1] [state] failed" >> "$file"
         exit 1
     fi
