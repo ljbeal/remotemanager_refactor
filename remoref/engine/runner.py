@@ -404,10 +404,10 @@ submit_job_{{submitter_cmd}} () {{
     echo "$timestr [$1] [state] submitted" >> "$file"
     {{submission_section}}}}"""
 
-    submission_normal = """{submitter} $2 ||
+    submission_normal = """{submitter} $2 ||  # submission line
     echo "$timestr [$1] [state] failed" >> "$file"
 """
-    submission_script = """if {submitter} $2 ; then
+    submission_script = """if {submitter} $2 ; then  # submission line
         echo "$timestr [$1] [state] completed" >> "$file"
     else
         echo "$timestr [$1] [state] failed" >> "$file"

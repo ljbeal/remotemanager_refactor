@@ -1,3 +1,4 @@
+import re
 import time
 from typing import Any, Callable, Dict, List, Optional, Union
 import warnings
@@ -294,6 +295,20 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
     @property
     def is_finished(self) -> List[bool]:
         self.read_remote_manifest()
+
+        # Check for submission errors
+        if self.files.master.content is not None:
+            # This checks for errors with the actual submitter
+            submission_line_no = 0  # collect the line which deals with submission
+            for i, line in enumerate(self.files.master.content.split("\n")):
+                if line.endswith("# submission line"):
+                    submission_line_no = i + 1
+                    break
+            # now see if we get a "command not found" at that line no.
+            if self.stderr is not None:
+                match = re.compile(f".*line {submission_line_no}:.*command not found")
+                if re.match(match, self.stderr) is not None:
+                    raise SubmissionError(f"Encountered an error during submisson. Is the submitter '{self.url.submitter}' correct?")
 
         states = [r.is_finished for r in self.runners]
 

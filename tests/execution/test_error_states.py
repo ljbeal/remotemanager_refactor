@@ -20,11 +20,8 @@ class TestMalformedCommands(BaseTestClass):
         url = URL(submitter="foo")
         ps = self.create_process(run, url=url)
 
-        ps.run_direct(a=1)
-
-        assert isinstance(ps.results[0], RunnerFailedError)
-        assert ps.stderr is not None
-        assert "foo: command not found" in ps.stderr
+        with pytest.raises(SubmissionError, match=r".*Is the submitter 'foo' correct?"):
+            ps.run_direct(a=1)
 
     def test_broken_python(self):
         url = URL(python="foo")
