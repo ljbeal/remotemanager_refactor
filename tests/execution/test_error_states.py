@@ -1,5 +1,5 @@
 import pytest
-from remoref.engine.exceptions import RunnerFailedError
+from remoref.engine.exceptions import RunnerFailedError, SubmissionError
 from remoref.utils.basetestclass import BaseTestClass
 from remotemanager import URL
 
@@ -8,7 +8,7 @@ def run(a: int) -> int:
     return a
 
 
-class TestErrorStates(BaseTestClass):
+class TestMalformedCommands(BaseTestClass):
     def test_broken_shell(self):
         url = URL(shell="foo")
         ps = self.create_process(run, url=url)
@@ -35,3 +35,17 @@ class TestErrorStates(BaseTestClass):
         assert isinstance(ps.results[0], RunnerFailedError)
         
         assert "foo: command not found" in str(ps.results[0])
+
+
+class TestMalformedFiles(BaseTestClass):
+    def test_broken_master(self):
+        ps = self.create_process(run)
+
+        ps.prepare(a=1)
+        ps.transfer()
+
+        with open(ps.files.master.remote, "w") as o:
+            o.write("")
+
+        with pytest.raises(SubmissionError):
+            ps.run()
