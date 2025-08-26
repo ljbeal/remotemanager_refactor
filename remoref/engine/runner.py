@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from remoref.engine.mixins.execmixin import ExecMixin
 from remoref.engine.mixins.filehandler import ExtraFilesMixin, FileHandlerBaseClass
@@ -106,14 +106,16 @@ class Runner(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         global_args.update(self._temp_exec_args)
         return global_args
 
-    def runline(self, jobscript_hash: str) -> str:
+    def runline(self, jobscript_hash: Optional[str] = None) -> str:
         """
         Returns the string necessary to execute this runner
         """
-        runline = f"submit_job_{self.url.submitter} {self.short_uuid} {self.files.jobscript.name} {jobscript_hash}"
+        runline = [f"submit_job_{self.url.submitter} {self.short_uuid} {self.files.jobscript.name} {jobscript_hash}"]
+        if jobscript_hash is None:
+            raise ValueError(f"No hash calculated for jobscript {self.files.jobscript.name}")
         if self.exec_args.get("asynchronous", True):
-            runline += " &"
-        return runline
+            runline.append("&")
+        return " ".join(runline)
 
     @property
     def execline(self) -> str:
@@ -170,7 +172,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
         if not os.path.exists(self.local_dir):
             os.makedirs(self.local_dir)
         # generate and add the per-runner lines to the master script
-        master_content = [
+        master_prologue = [
             "# Functions #",
             generate_format_fn(manifest_filename=self.parent.files.manifest.name),
             generate_submit_fn(
@@ -187,6 +189,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
             f'echo "{repo.generate_log_str(time=None, uuid=self.parent.short_uuid, string="submitted")}" > {self.parent.files.manifest.name}\n',
             "# Execution #",
         ]
+        master_content: List[str] = []
         # collect baseline repo content
         repo_prologue: List[str] = []
         repo_epilogue: List[str] = []
@@ -233,10 +236,17 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
         repo_content.append("\n".join(runner_data) + "\n}\n\n")
 
         # main file writing
-        self.parent.files.master.write("\n".join(master_content))
         self.parent.files.repo.write(
             "".join(repo_prologue + repo_content + repo_epilogue)
         )
+
+        master_prologue.insert(
+            0, 
+            f"""# initial file check #
+repo_hash=$(md5sum {self.parent.files.repo.name} | awk '{{print $1}}')
+if [[ $repo_hash != {self.parent.files.repo.md5sum} ]]; then
+    echo >&2 'Mismatched hash for repo'\n    exit 1\nfi\n""")
+        self.parent.files.master.write("\n".join(master_prologue + master_content))
 
         return True
 
