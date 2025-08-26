@@ -110,9 +110,13 @@ class Runner(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         """
         Returns the string necessary to execute this runner
         """
-        runline = [f"submit_job_{self.url.submitter} {self.short_uuid} {self.files.jobscript.name} {jobscript_hash}"]
+        runline = [
+            f"submit_job_{self.url.submitter} {self.short_uuid} {self.files.jobscript.name} {jobscript_hash}"
+        ]
         if jobscript_hash is None:
-            raise ValueError(f"No hash calculated for jobscript {self.files.jobscript.name}")
+            raise ValueError(
+                f"No hash calculated for jobscript {self.files.jobscript.name}"
+            )
         if self.exec_args.get("asynchronous", True):
             runline.append("&")
         return " ".join(runline)
@@ -183,7 +187,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
             "export -f enable_redirect",
             "export sourcedir=$PWD",
             f"export r_uuid={self.parent.short_uuid}",
-            f"echo '{self.parent.short_uuid}'",
+            f"echo '{self.parent.short_uuid}'  # enables submission validation via run_cmd",
             "enable_redirect",
             f"rm -rf {self.parent.files.manifest.name}",
             f'echo "{repo.generate_log_str(time=None, uuid=self.parent.short_uuid, string="submitted")}" > {self.parent.files.manifest.name}\n',
@@ -220,7 +224,9 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
 
             runner.files.jobscript.write(self.generate_jobscript(runner))
 
-            master_content.append(runner.runline(jobscript_hash=runner.files.jobscript.md5sum))
+            master_content.append(
+                runner.runline(jobscript_hash=runner.files.jobscript.md5sum)
+            )
 
             dumped_args = json.dumps(runner.call_args)
             runner_data.append(f"\t'{runner.short_uuid}': '{dumped_args}',")
@@ -241,11 +247,12 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
         )
 
         master_prologue.insert(
-            0, 
+            0,
             f"""# initial file check #
 repo_hash=$(md5sum {self.parent.files.repo.name} | awk '{{print $1}}')
 if [[ $repo_hash != "{self.parent.files.repo.md5sum}" ]]; then
-    echo >&2 'Mismatched hash for repo'\n    exit 1\nfi\n""")
+    echo >&2 'Mismatched hash for repo'\n    exit 1\nfi\n""",
+        )
         self.parent.files.master.write("\n".join(master_prologue + master_content))
 
         return True

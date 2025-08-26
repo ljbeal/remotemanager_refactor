@@ -232,7 +232,9 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
                 if self.run_cmd is not None:
                     raise SubmissionError(f"Submission failed\n{self.run_cmd.stderr}")
                 else:
-                    raise SubmissionError("Submission failed, with no run_cmd generated")
+                    raise SubmissionError(
+                        "Submission failed, with no run_cmd generated"
+                    )
 
         return success
 
