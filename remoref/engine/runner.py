@@ -402,8 +402,7 @@ submit_job_{{submitter_cmd}} () {{
     fi
 
     echo "$timestr [$1] [state] submitted" >> "$file"
-    {{submission_section}}
-}}"""
+    {{submission_section}}}}"""
 
     submission_normal = """{submitter} $2 ||
     echo "$timestr [$1] [state] failed" >> "$file"
