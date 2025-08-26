@@ -146,7 +146,7 @@ class Runner(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         submit = f"""\
 export r_uuid='{runner.short_uuid}'
 enable_redirect
-echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] submitted" >> "$sourcedir/{self.parent.files.manifest.name}"
+echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >> "$sourcedir/{self.parent.files.manifest.name}"
 {runner.execline}
 """
         if runner.exec_args.get("avoid_nodes", False):
@@ -379,6 +379,7 @@ submit_job_{{submitter_cmd}} () {{
     local timestr="$(date -u +'{repo.date_format}')"
     local file="$sourcedir/{manifest_filename}"
 
+    echo "$timestr [$1] [state] submitted" >> "$file"
     {{submission_section}}
 }}"""
 
