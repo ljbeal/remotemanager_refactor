@@ -244,7 +244,7 @@ echo "$(date -u +'{repo.date_format}') [{runner.short_uuid}] [state] running" >>
             0, 
             f"""# initial file check #
 repo_hash=$(md5sum {self.parent.files.repo.name} | awk '{{print $1}}')
-if [[ $repo_hash != {self.parent.files.repo.md5sum} ]]; then
+if [[ $repo_hash != "{self.parent.files.repo.md5sum}" ]]; then
     echo >&2 'Mismatched hash for repo'\n    exit 1\nfi\n""")
         self.parent.files.master.write("\n".join(master_prologue + master_content))
 
@@ -389,7 +389,7 @@ submit_job_{{submitter_cmd}} () {{
     local file="$sourcedir/{manifest_filename}"
     # compare the hash of the transferred file with generated
     computed_hash=$(md5sum "$2" | awk '{{print $1}}')
-    if [[ $computed_hash != $3 ]]; then
+    if [[ $computed_hash != "$3" ]]; then
         echo >&2 "Mismatched hash for file: $2"
         echo "$timestr [$1] [state] failed" >> "$file"
         exit 1
