@@ -49,3 +49,30 @@ class TestMalformedFiles(BaseTestClass):
 
         with pytest.raises(SubmissionError):
             ps.run()
+
+    def test_broken_repo(self):
+        ps = self.create_process(run)
+
+        ps.prepare(a=1)
+        ps.transfer()
+
+        with open(ps.files.repo.remote, "w") as o:
+            o.write("")
+
+        with pytest.raises(RuntimeError, match=r".*Mismatched hash.*"):
+            ps.run()
+
+    def test_broken_jobscript(self):
+        ps = self.create_process(run)
+
+        ps.prepare(a=1)
+        ps.prepare(a=2)
+        ps.transfer()
+
+        with open(ps.runners[0].files.jobscript.remote, "w") as o:
+            o.write("")
+
+        self.run_ps()
+        assert isinstance(ps.results[0], RunnerFailedError)
+        # if only one file is broken, it should not spoil other runs
+        assert ps.results[1] == 2
