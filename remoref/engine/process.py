@@ -3,9 +3,9 @@ import time
 from typing import Any, Callable, Dict, List, Optional, Union
 import warnings
 
-from remoref.utils.validate_stderr import validate_error
 from remotemanager.connection.cmd import CMD
 from remotemanager.connection.url import URL
+from remotemanager.connection.validate_error import validate_error
 from remoref.engine.mixins.execmixin import ExecMixin
 from remoref.engine.mixins.filehandler import ExtraFilesMixin, FileHandlerBaseClass
 from remoref.engine.repo import Manifest
@@ -232,7 +232,7 @@ class ProcessHandler(UUIDMixin, ExecMixin, ExtraFilesMixin, VerboseMixin):
         if success and self.run_cmd is not None:
             self.run_cmd.communicate(ignore_errors=True)
 
-            if validate_error(self.run_cmd.stderr):
+            if validate_error(self.run_cmd.stderr, self.url.error_ignore_patterns):
                 raise SubmissionError(
                     f"Encountered an error during submission:\n{self.run_cmd.stderr}"
                 )
